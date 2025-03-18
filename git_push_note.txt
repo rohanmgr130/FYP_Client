@@ -1,0 +1,12 @@
+
+git status   
+(if red color - this will show the file that are not pushed in github)
+
+git add .
+(for adding all changes/updated files/folder in github)
+
+git commit -m "your-message"
+(for giving message for commit)
+
+git push
+(for pushing all changes/updated files/folder in github)
