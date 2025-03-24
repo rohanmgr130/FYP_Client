@@ -26,8 +26,20 @@ exports.getMenuItemById = async (req, res) => {
 // Add a new menu item
 exports.addMenuItem = async (req, res) => {
   try {
-    const { name, price, image } = req.body;
-    const newMenuItem = new Menu({ name, price, image });
+    const { title, price, type, categories, image } = req.body;
+
+    if (!title || !price || !type || !categories || !image) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const newMenuItem = new Menu({
+      title,
+      price,
+      type,
+      categories: categories.map((cat) => cat.toLowerCase()),
+      image,
+    });
+
     await newMenuItem.save();
     res.status(201).json(newMenuItem);
   } catch (error) {
@@ -38,10 +50,16 @@ exports.addMenuItem = async (req, res) => {
 // Update a menu item
 exports.updateMenuItem = async (req, res) => {
   try {
-    const { name, price, image } = req.body;
+    const { title, price, type, categories, image } = req.body;
     const updatedMenuItem = await Menu.findByIdAndUpdate(
       req.params.id,
-      { name, price, image },
+      {
+        title,
+        price,
+        type,
+        categories: categories.map((cat) => cat.toLowerCase()),
+        image,
+      },
       { new: true }
     );
 
