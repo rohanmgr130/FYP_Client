@@ -7,7 +7,7 @@ const menuSchema = new mongoose.Schema(
       required: true,
     },
     price: {
-      type: Number,
+      type: String,
       required: true,
     },
     type: {
@@ -21,7 +21,7 @@ const menuSchema = new mongoose.Schema(
     },
     image: {
       type: String, // Store the image URL or file path
-      required: true,
+      // required: true,
     },
   },
   { timestamps: true }

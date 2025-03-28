@@ -26,10 +26,9 @@ exports.getMenuItemById = async (req, res) => {
 // Add a new menu item
 exports.addMenuItem = async (req, res) => {
   try {
-    const { title, price, type, categories, image } = req.body;
-
-    if (!title || !price || !type || !categories || !image) {
-      return res.status(400).json({ message: "All fields are required" });
+    const { title, price, type, categories } = req.body;
+    if (!title || !price || !type || !categories) {
+      return res.status(400).json({ message: `All fields are required  ` });
     }
 
     const newMenuItem = new Menu({
@@ -37,7 +36,7 @@ exports.addMenuItem = async (req, res) => {
       price,
       type,
       categories: categories.map((cat) => cat.toLowerCase()),
-      image,
+      // image,
     });
 
     await newMenuItem.save();
@@ -72,6 +71,7 @@ exports.updateMenuItem = async (req, res) => {
     res.status(500).json({ message: "Error updating menu item", error });
   }
 };
+
 
 // Delete a menu item
 exports.deleteMenuItem = async (req, res) => {

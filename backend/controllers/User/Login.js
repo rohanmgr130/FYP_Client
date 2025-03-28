@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
-const User = require("../../models/student/User")
+const User = require("../../models/user/User")
 
 // Login Controller
 const loginUser = async (req, res) => {
@@ -28,6 +28,9 @@ const loginUser = async (req, res) => {
       success:true,
       message: "Login successful",
       token, // Send token as response
+      email:user.email,
+      id:user._id,
+      fullname:user.fullname
     });
   } catch (error) {
     console.error(error);
