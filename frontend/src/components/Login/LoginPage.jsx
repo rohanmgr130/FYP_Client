@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { CloudDrizzle } from 'lucide-react';
+import { Router, useNavigate } from 'react-router-dom';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -8,18 +10,20 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const userID = localStorage.getItem('userID');
+  const navigate=useNavigate()
 
   const handleLogin = async () => {
     if (!email || !password) {
       alert('Please fill in all fields');
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
+  
     try {
-      const response = await fetch("http://localhost:4000/login", {
+      const response = await fetch("http://localhost:4000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -29,13 +33,18 @@ const LoginPage = () => {
           password,
         }),
       });
-
+  
       const data = await response.json();
-
+  
       if (data.success) {
         localStorage.setItem('token', data.token);
+        localStorage.setItem('email', data.email)
+        localStorage.setItem('fullname', data.fullname)
+        localStorage.setItem('id', data.id)
+  
         alert('Login successful!');
-        window.location.href = '/';
+        navigate("/")
+        ; // Reload to apply changes
       } else {
         setError(data.message || 'Login failed!');
       }
@@ -44,7 +53,9 @@ const LoginPage = () => {
     } finally {
       setLoading(false);
     }
+
   };
+  
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-blue-100">

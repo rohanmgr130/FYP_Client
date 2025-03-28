@@ -5,8 +5,8 @@ import Register from './Pages/Register';
 import Home from './Pages/Home';
 import MenuPage from './Pages/MenuPage';
 import FavouritePage from './Pages/FavouritePage';
-import SearchPage from './Pages/SearchPage';
 import OrderHistory from './Pages/OrderHistory';
+import CartPage from './Pages/CartPage';
 
 
 
@@ -20,9 +20,10 @@ function App() {
         <Route path='/register' element={<Register/>} />
         <Route path='/' element={<Home/>} />
         <Route path='/menus' element={<MenuPage/>} />
-        <Route path='/search' element={<SearchPage/>} />
         <Route path='/favorites' element={<FavouritePage/>} />
         <Route path='/order-history' element={<OrderHistory/>} />
+        <Route path='/cart' element={<CartPage/>} />
+
       </Routes>
 
     </Router>
