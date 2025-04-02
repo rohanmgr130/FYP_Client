@@ -4,7 +4,7 @@
   import Category from '../components/Home/Category'
   import TodaysSpecial from '../components/Home/TodaysSpecial'
   import Footer from '../components/FooterPart'
-  import OurMenu from '../components/Home/OurMenu'
+import MenuHome from '../components/Home/OurMenu'
 
 
 
@@ -17,7 +17,7 @@
         <Search/>
         <Category/>
         <TodaysSpecial/>
-        <OurMenu/>
+        <MenuHome/>
         
         
         <Footer/>

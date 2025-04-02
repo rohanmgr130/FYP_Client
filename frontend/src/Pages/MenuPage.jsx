@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FaHeart, FaShoppingCart, FaStar, FaFilter } from 'react-icons/fa';
+import { FaHeart, FaShoppingCart, FaFilter } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/FooterPart';
+import Card from '../components/Card';
 
 const OurMenu = () => {
   const navigate = useNavigate();
@@ -10,18 +11,18 @@ const OurMenu = () => {
   // State for menu items and API handling
   const [menuItems, setMenuItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cart, setCart] = useState([]);
+  const [favorites, setFavorites] = useState([]);
 
   // Filtering states
-  const [priceRange, setPriceRange] = useState(20);
+  const [priceRange, setPriceRange] = useState(1250);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
-  const [dietaryFilters, setDietaryFilters] = useState([]);
-
- 
+  const [activeType, setActiveType] = useState("All");
 
   // Helper function to safely convert price to a number
   const safePrice = (price) => {
@@ -34,7 +35,37 @@ const OurMenu = () => {
     return 0;
   };
 
-  // Add to cart functionality
+  // Load favorites from localStorage
+  useEffect(() => {
+    const savedFavorites = localStorage.getItem('favorites');
+    if (savedFavorites) {
+      setFavorites(JSON.parse(savedFavorites));
+    }
+  }, []);
+
+  // Function to check if an item is in favorites
+  const isFavorited = (itemId) => {
+    return favorites.includes(itemId);
+  };
+
+  // Function to toggle favorite status
+  const toggleFavorite = (itemId) => {
+    let updatedFavorites;
+    
+    if (isFavorited(itemId)) {
+      // Remove from favorites
+      updatedFavorites = favorites.filter(id => id !== itemId);
+    } else {
+      // Add to favorites
+      updatedFavorites = [...favorites, itemId];
+    }
+    
+    // Update state and localStorage
+    setFavorites(updatedFavorites);
+    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+  };
+
+  // Modified addToCart function to navigate to cart page after adding
   const addToCart = async (item) => {
     try {
       // Make the POST request to the backend
@@ -43,7 +74,7 @@ const OurMenu = () => {
         headers: {  
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ item }), // Send the item as JSON
+        body: JSON.stringify({ item }),
       });
   
       // Check if the response is okay
@@ -55,47 +86,60 @@ const OurMenu = () => {
       const data = await response.json();
   
       // Update the cart state with the response from the backend
-      setCart(data.cart); // Assuming the backend sends the updated cart
+      setCart(data.cart);
+      
+      // Navigate to the cart page
+      navigate('/cart');
     } catch (error) {
       console.error("Error adding item to cart:", error);
     }
   };
   
-
-  // Define categories and dietary options based on the data
-  const categories = ["All", ...new Set(menuItems.flatMap(item => item.categories || []))];
-  const dietaryOptions = ["Vegetarian", "Non-Vegetarian"];
-
-  // Fetch menu items from API
-  const fetchMenuItems = async () => {
+  const handleGetAllMenu = async () => {
     try {
-      setIsLoading(true)
-      const response = await fetch('http://localhost:4000/api/staff/get-all-menu')
-      
+      setIsLoading(true);
+      const response = await fetch(`http://localhost:4000/api/staff/get-all-menu`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      // Check if the response is successful
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`)
+        throw new Error(`Failed to fetch menu details: ${response.status} ${response.statusText}`);
       }
-      
-      const data = await response.json()
-      setMenuItems(data)
-      setFilteredItems(data)
-      setError(null)
-    } catch (err) {
-      setError('Failed to fetch menu items. Please try again later.')
-      console.error('Error fetching menu items:', err)
+  
+      const data = await response.json();
+      setMenuItems(data);
+      setFilteredItems(data); // Initially set filtered items to all menu items
+    } catch (error) {
+      console.error('Error fetching menu details:', error.message);
+      setError('Failed to load menu items. Please try again later.');
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Fetch menu items on component mount
   useEffect(() => {
-    fetchMenuItems()
-  }, [])
+    handleGetAllMenu();
+  }, []);
+
+  // Extract all unique categories and types from menu items
+  const getUniqueCategories = () => {
+    const allCategories = menuItems.flatMap(item => item.categories || []);
+    return ["All", ...new Set(allCategories)];
+  };
+
+  const getUniqueTypes = () => {
+    const allTypes = menuItems.map(item => item.type || "");
+    return ["All", ...new Set(allTypes.filter(type => type))];
+  };
 
   // Apply filters whenever filter criteria change
   useEffect(() => {
-    let result = menuItems;
+    let result = [...menuItems]; // Create a copy of menuItems to avoid mutation
     
     // Filter by category
     if (activeCategory !== "All") {
@@ -104,15 +148,11 @@ const OurMenu = () => {
       );
     }
     
-    // Filter by dietary restrictions
-    if (dietaryFilters.length > 0) {
-      result = result.filter(item => {
-        const itemType = (item.type || '').toLowerCase();
-        return dietaryFilters.some(diet => 
-          (diet === "Vegetarian" && itemType === "vegetarian") ||
-          (diet === "Non-Vegetarian" && itemType === "non-vegetarian")
-        );
-      });
+    // Filter by type (vegetarian, non-vegetarian, drinks, etc.)
+    if (activeType !== "All") {
+      result = result.filter(item => 
+        item.type && item.type.toLowerCase() === activeType.toLowerCase()
+      );
     }
     
     // Filter by price
@@ -130,33 +170,27 @@ const OurMenu = () => {
     }
     
     setFilteredItems(result);
-  }, [menuItems, activeCategory, dietaryFilters, priceRange, searchQuery]);
-
-  // Toggle dietary filter
-  const toggleDietaryFilter = (diet) => {
-    if (dietaryFilters.includes(diet)) {
-      setDietaryFilters(dietaryFilters.filter(d => d !== diet));
-    } else {
-      setDietaryFilters([...dietaryFilters, diet]);
-    }
-  };
+  }, [menuItems, activeCategory, activeType, priceRange, searchQuery]);
 
   // Reset all filters
   const resetFilters = () => {
     setActiveCategory("All");
-    setDietaryFilters([]);
-    setPriceRange(20);
+    setActiveType("All");
+    setPriceRange(1250);
     setSearchQuery("");
   };
 
-  // Render loading state
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl text-gray-600">Loading menu items...</div>
-      </div>
-    );
-  }
+  // Get background color based on item type
+  const getTypeColor = (type) => {
+    if (!type) return "bg-gray-500";
+    
+    type = type.toLowerCase();
+    if (type === "vegetarian") return "bg-green-500";
+    if (type === "non-vegetarian") return "bg-red-500";
+    if (type === "drinks" || type === "beverage") return "bg-blue-500";
+    
+    return "bg-purple-500"; // Default for other types
+  };
 
   // Render error state
   if (error) {
@@ -165,7 +199,7 @@ const OurMenu = () => {
         <div className="text-center">
           <div className="text-2xl text-red-600 mb-4">{error}</div>
           <button 
-            onClick={fetchMenuItems}
+            onClick={handleGetAllMenu}
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
           >
             Try Again
@@ -174,6 +208,19 @@ const OurMenu = () => {
       </div>
     );
   }
+
+  // Enhanced Card component that includes favorites functionality
+  const EnhancedCard = ({ item }) => {
+    // Using the original Card component structure but adding favorites functionality
+    return (
+      <Card 
+        item={item} 
+        addToCart={addToCart}
+        isFavorited={isFavorited(item._id)}
+        toggleFavorite={() => toggleFavorite(item._id)}
+      />
+    );
+  };
 
   return (
     <>
@@ -210,7 +257,7 @@ const OurMenu = () => {
           <div className="mb-6">
             <h2 className="font-bold text-lg mb-3">Categories</h2>
             <div className="flex flex-wrap gap-2">
-              {categories.map(category => (
+              {getUniqueCategories().map(category => (
                 <button
                   key={category}
                   onClick={() => setActiveCategory(category)}
@@ -226,38 +273,47 @@ const OurMenu = () => {
           </div>
 
           <div className="mb-6">
-            <h2 className="font-bold text-lg mb-3">Dietary Preferences</h2>
+            <h2 className="font-bold text-lg mb-3">Type</h2>
             <div className="flex flex-wrap gap-2">
-              {dietaryOptions.map(diet => (
+              {getUniqueTypes().map(type => (
                 <button
-                  key={diet}
-                  onClick={() => toggleDietaryFilter(diet)}
+                  key={type}
+                  onClick={() => setActiveType(type)}
                   className={`px-4 py-2 rounded-full text-sm font-medium transition-colors
-                    ${dietaryFilters.includes(diet) 
-                      ? 'bg-green-500 text-white' 
+                    ${activeType === type 
+                      ? 'bg-blue-500 text-white' 
                       : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
                 >
-                  {diet}
+                  {type}
                 </button>
               ))}
             </div>
           </div>
 
           <div>
-            <h2 className="font-bold text-lg mb-3">Max Price: ${priceRange}</h2>
+            <h2 className="font-bold text-lg mb-3">Max Price: ₹{priceRange}</h2>
             <input
               type="range"
               min="5"
-              max="20"
-              step="1"
+              max="1250"
+              step="5"
               value={priceRange}
               onChange={(e) => setPriceRange(parseInt(e.target.value))}
               className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
             />
             <div className="flex justify-between text-xs text-gray-500 mt-1">
-              <span>$5</span>
-              <span>$20</span>
+              <span>Rs 5</span>
+              <span>Rs 1250</span>
             </div>
+          </div>
+
+          <div className="mt-6">
+            <button 
+              onClick={resetFilters}
+              className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+            > 
+              Reset All Filters
+            </button>
           </div>
         </div>
       )}
@@ -265,7 +321,7 @@ const OurMenu = () => {
       {/* Category Pills (always visible) */}
       <div className="max-w-7xl mx-auto mb-8 overflow-x-auto">
         <div className="flex gap-2 pb-2">
-          {categories.map(category => (
+          {getUniqueCategories().map(category => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
@@ -280,98 +336,36 @@ const OurMenu = () => {
         </div>
       </div>
 
-      {/* Results Count */}
-      <div className="max-w-7xl mx-auto mb-4">
-        <p className="text-gray-600">
-          Showing {filteredItems.length} {filteredItems.length === 1 ? 'item' : 'items'}
-        </p>
-      </div>
-
-      {/* Menu Grid */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {filteredItems.length > 0 ? (
-          filteredItems.map((item) => (
-            <div
-              key={item._id}
-              className="group relative bg-gray-800 rounded-xl overflow-hidden
-                       transform transition-all duration-300
-                       hover:-translate-y-2 hover:shadow-2xl"
-            >
-              {/* Image Container */}
-              <div className="relative h-64 overflow-hidden">
-                <div className="absolute inset-0 bg-black/10 z-10" />
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover transform transition-transform duration-300 
-                           group-hover:scale-110"
-                />
-                {/* Category Badge */}
-                {item.categories && item.categories.length > 0 && (
-                  <div className="absolute top-4 left-4 bg-blue-500/90 px-3 py-1 rounded-full z-20">
-                    <span className="text-white text-sm font-medium">{item.categories[0]}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                <div className="mb-2 flex justify-between items-start">
-                  <h2 className="text-xl font-bold text-white">{item.title}</h2>
-                  {item.type && (
-                    <div className="flex gap-1">
-                      {item.type.toLowerCase() === "vegetarian" && (
-                        <span className="bg-green-500 text-white text-xs px-2 py-1 rounded">Veg</span>
-                      )}
-                      {item.type.toLowerCase() === "non-vegetarian" && (
-                        <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">Non-Veg</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-blue-400">
-                    ${safePrice(item.price).toFixed(2)}
-                  </span>
-
-                  {/* Action Buttons */}
-                  <div className="flex space-x-3">
-                    <button
-                      className="p-2 rounded-full bg-gray-700 hover:bg-gray-600 
-                                text-red-400 hover:text-red-300 transition-colors
-                                transform hover:scale-110"
-                      title="Add to Favorites"
-                    >
-                      <FaHeart size={18} />
-                    </button>
-                    <button
-                      onClick={() => addToCart(item)}
-                      className="p-2 rounded-full bg-blue-600 hover:bg-blue-500 
-                                text-white transition-colors
-                                transform hover:scale-110"
-                      title="Add to Cart"
-                    >
-                      <FaShoppingCart size={18} />
-                    </button>
-                  </div>
+      {/* Menu Items Grid */}
+      {isLoading ? (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredItems.length > 0 ? (
+            filteredItems.map((item, index) => (
+              <div key={index}>
+                {/* Render the original Card component but pass necessary props */}
+                <div className="relative">
+                  <Card item={item} addToCart={addToCart} />
+                  
                 </div>
               </div>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500 text-lg">No menu items found matching your filters</p>
+              <button 
+                onClick={resetFilters}
+                className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Reset Filters
+              </button>
             </div>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12">
-            <h3 className="text-xl font-semibold text-gray-600">No menu items match your filters</h3>
-            <p className="text-gray-500 mt-2">Try adjusting your filters or search criteria</p>
-            <button 
-              onClick={resetFilters}
-              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Reset All Filters
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
     <Footer/>
     </>

@@ -1,13 +1,14 @@
 import React from 'react'
 import Navbar from '../components/Navbar'
-import AddToCart from '../components/AddToCart'
+
 import Footer from '../components/FooterPart'
+import MyCart from '../components/MyCart'
 
 const CartPage = () => {
   return (
     <>
     <Navbar/>
-    <AddToCart/>
+    <MyCart />
     <Footer/>
 
     </>
