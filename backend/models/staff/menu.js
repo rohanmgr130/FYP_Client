@@ -23,6 +23,12 @@ const menuSchema = new mongoose.Schema(
       type: String, // Store the image URL or file path
       // required: true,
     },
+    menuType:{
+      type:String,
+      required:true,
+      enum:["todays-special","normal", "best-seller"],
+      default:"normal"
+    }
   },
   { timestamps: true }
 );
