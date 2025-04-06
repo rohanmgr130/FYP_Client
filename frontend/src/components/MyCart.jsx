@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const MyCart = () => {
   const [cartData, setCartData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const userId = localStorage.getItem('id');
+  const navigate = useNavigate();
 
   // Get my cart details
   const handleMyCartDetails = async (id) => {
@@ -38,10 +40,20 @@ const MyCart = () => {
 
   // Update quantity function
   const updateQuantity = async (itemId, newQuantity) => {
-    if (newQuantity < 1) return;
+    if (newQuantity < 1) {
+      // If quantity becomes less than 1, remove the item
+      removeItem(itemId);
+      return;
+    }
     
     try {
-      // Update in UI immediately for responsiveness
+      // Find the product ID from the item
+      const item = cartData.items.find(item => item._id === itemId);
+      if (!item) return;
+      
+      const productId = item.productId._id;
+      
+      // Update UI immediately for responsiveness
       const updatedItems = cartData.items.map(item => {
         if (item._id === itemId) {
           const newTotal = item.price * newQuantity;
@@ -60,8 +72,26 @@ const MyCart = () => {
         finalTotal: newOrderTotal - (cartData.discount || 0)
       });
       
-      // Here you would also make an API call to update the server
-      // await fetch(`http://localhost:4000/api/update-cart-item`, {...})
+      // Make API call to update the server
+      const response = await fetch('http://localhost:4000/api/update-cart-item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          productId,
+          productQuantity: newQuantity
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update cart item');
+      }
+      
+      // Optional: refresh cart data to ensure sync with server
+      // handleMyCartDetails(userId);
+      
     } catch (error) {
       console.error("Error updating quantity:", error);
     }
@@ -70,6 +100,12 @@ const MyCart = () => {
   // Remove item function
   const removeItem = async (itemId) => {
     try {
+      // Find the product ID from the item
+      const item = cartData.items.find(item => item._id === itemId);
+      if (!item) return;
+      
+      const productId = item.productId._id;
+      
       // Update UI immediately
       const updatedItems = cartData.items.filter(item => item._id !== itemId);
       const newOrderTotal = updatedItems.reduce((sum, item) => sum + item.total, 0);
@@ -81,8 +117,22 @@ const MyCart = () => {
         finalTotal: newOrderTotal - (cartData.discount || 0)
       });
       
-      // Here you would also make an API call to remove the item from the server
-      // await fetch(`http://localhost:4000/api/remove-cart-item/${itemId}`, {...})
+      // Make API call to remove the item from the server
+      const response = await fetch('http://localhost:4000/api/remove-from-cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          productId
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to remove cart item');
+      }
+      
     } catch (error) {
       console.error("Error removing item:", error);
     }
@@ -98,19 +148,43 @@ const MyCart = () => {
       return;
     }
     
-    // Here you would make an API call to validate and apply the promo code
-    // For now, let's simulate a 10% discount
-    const discount = Math.round(cartData.orderTotal * 0.1);
-    setCartData({
-      ...cartData,
-      promoCode: promoCode,
-      discount: discount,
-      finalTotal: cartData.orderTotal - discount
-    });
-    
-    setPromoStatus("Promo code applied successfully!");
-    setTimeout(() => setPromoStatus(""), 3000);
-    setPromoCode("");
+    try {
+      // Make API call to validate and apply the promo code
+      const response = await fetch('http://localhost:4000/api/apply-promo-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          promoCode
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        setPromoStatus(errorData.message || "Failed to apply promo code");
+        return;
+      }
+      
+      const data = await response.json();
+      
+      // Update cart data with applied promo
+      setCartData({
+        ...cartData,
+        promoCode: promoCode,
+        discount: data.cart.discount,
+        finalTotal: data.cart.finalTotal
+      });
+      
+      setPromoStatus("Promo code applied successfully!");
+      setTimeout(() => setPromoStatus(""), 3000);
+      setPromoCode("");
+      
+    } catch (error) {
+      console.error("Error applying promo code:", error);
+      setPromoStatus("Error applying promo code. Please try again.");
+    }
   };
 
   useEffect(() => {
@@ -122,8 +196,8 @@ const MyCart = () => {
   }, [userId]);
 
   const proceedToCheckout = () => {
-    // Navigate to checkout or handle checkout logic
-    alert("Proceeding to checkout...");
+    // Navigate to checkout page
+    navigate('/checkout');
   };
 
   if (loading) {
@@ -148,7 +222,10 @@ const MyCart = () => {
           </div>
           <h2 className="text-2xl font-bold text-gray-800 mb-2">Authentication Required</h2>
           <p className="text-gray-600 mb-8">{error}</p>
-          <button className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300">
+          <button 
+            className="w-full px-6 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300"
+            onClick={() => navigate('/login')}
+          >
             Login to View Cart
           </button>
         </div>
@@ -167,7 +244,10 @@ const MyCart = () => {
           </div>
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Cart is Empty</h2>
           <p className="text-gray-500 mb-8">Looks like you haven't added any delicious items to your cart yet</p>
-          <button className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300">
+          <button 
+            className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300"
+            onClick={() => navigate('/menu')}
+          >
             Explore Menu
           </button>
         </div>
@@ -187,7 +267,7 @@ const MyCart = () => {
           {/* Left column - Cart items */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden flex-grow">
             <div className="p-6 border-b border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-800">Add TO Cart</h2>
+              <h2 className="text-xl font-semibold text-gray-800">My Cart</h2>
             </div>
             
             {/* Cart items */}
@@ -322,10 +402,6 @@ const MyCart = () => {
                     </div>
                   )}
                   
-                  <div className="flex justify-between text-gray-600">
-                    <span>Delivery Fee</span>
-                    <span className="font-medium text-gray-800">Rs. 0</span>
-                  </div>
                   
                   <div className="border-t border-dashed border-gray-200 pt-4 mt-4">
                     <div className="flex justify-between text-lg font-bold text-gray-800">

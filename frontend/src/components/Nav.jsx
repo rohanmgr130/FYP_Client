@@ -7,6 +7,8 @@ function Nav() {
   // State to track scroll position
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const fullname=localStorage.getItem("fullname")
+  const email=localStorage.getItem("email")
   // Detect scroll and update state
   const handleScroll = () => {
     if (window.scrollY > 160) {
@@ -103,8 +105,8 @@ function Nav() {
               <div className="flex items-center">
                 <img src="profile.jpg" alt="User" className="w-8 h-8 rounded-full mr-3" />
                 <div className="overflow-hidden">
-                  <p className="text-sm font-medium text-gray-900 truncate">Rohan Magar</p>
-                  <p className="text-xs text-gray-500 truncate">rohan130@example.com</p>
+                  <p className="text-sm font-medium text-gray-900 truncate">{fullname}</p>
+                  <p className="text-xs text-gray-500 truncate">{email}</p>
                 </div>
               </div>
             </div>
