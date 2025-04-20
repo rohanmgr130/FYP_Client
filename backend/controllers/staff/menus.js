@@ -38,7 +38,6 @@ exports.addMenuItem = async (req, res) => {
     const { title, price, type, menuType, categories } = req.body;
     const image = req.file;
 
-    console.log("image", image)
 
     // Validate required fields
     if (!title || !price || !type || !menuType) {

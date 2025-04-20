@@ -9,7 +9,7 @@ const orderRouter = require("./routes/User/Orderpay.route")
 const { userRouter } = require("./routes/User/user.route");
 const favoritesRouter = require("./routes/User/favorite.route");
 const profileRouter = require("./routes/User/profile.route");
-const OrderHistoryRouter = require("./routes/User/orderhistory.route");
+// const OrderHistoryRouter = require("./routes/User/orderhistory.route");
 
 
 
@@ -37,7 +37,7 @@ app.use("/api", userRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/profile", profileRouter);
-app.use("/api/orderhistory", OrderHistoryRouter);
+// app.use("/api/orderhistory", OrderHistoryRouter);
 
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running okay!" });

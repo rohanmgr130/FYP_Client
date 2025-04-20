@@ -1,40 +1,54 @@
-const Orderpay = require("../../models/user/Orderpay")
+const Orderpay = require("../../models/user/Orderpay");
 const Cart = require("../../models/user/MyCart");
+const mongoose = require("mongoose");
 
 // Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    
-    const { cartId, orderMethod, paymentImage ,additionalInfo } = req.body;
-    console.log(req.body)
-    // Validate cart exists
+    const { cartId, orderMethod, additionalInfo } = req.body;
 
-    const cart = await Cart.findById(cartId);
-    console.log('cart data', cart);
+
+    // Validate cart exists and has not been already ordered
     if (!cartId) {
       return res.status(400).json({ success: false, message: "Cart ID is required" });
     }
-    
 
-    let filePath
-    // Save screenshot if provided
-    if (req.file) {
-      filePath= req.file.path;
+    const cart = await Cart.findById(cartId);
+    if (!cart) {
+      return res.status(404).json({ success: false, message: "Cart not found" });
     }
     
-    const savedOrder = await Orderpay.create({
+    if (cart.isPlacedOrder) {
+      return res.status(400).json({ success: false, message: "This cart has already been ordered" });
+    }
+
+    // Handle file upload
+    let filePath = null;
+    if (req.file) {
+      filePath = req.file.path;
+    }
+    
+    // Create order with cart data embedded
+    const newOrder = new Orderpay({
       cartId,
       orderMethod,
-      screenshot: filePath ? filePath : null, 
+      screenshot: filePath,
       additionalInfo,
-    })
+      cartData: {
+        userId: cart.userId,
+        items: cart.items,
+        orderTotal: cart.orderTotal,
+        promoCode: cart.promoCode,
+        discount: cart.discount,
+        finalTotal: cart.finalTotal
+      }
+    });
+    
+    const savedOrder = await newOrder.save();
 
-    await Cart.findByIdAndUpdate(
-      cartId,
-      { $set: { "items.$[].isPlacedOrder": true } },
-      { new: true }
-    );
-        
+    // Delete the cart after order creation
+    await Cart.findByIdAndDelete(cartId);
+    
     res.status(201).json({
       success: true,
       message: "Order created successfully",
@@ -53,7 +67,8 @@ exports.createOrder = async (req, res) => {
 // Get all orders
 exports.getAllOrders = async (req, res) => {
   try {
-    const orders = await Orderpay.find().populate('cartId');
+    // No need to populate cartId since we have cart data embedded
+    const orders = await Orderpay.find();
     
     res.status(200).json({
       success: true,
@@ -72,11 +87,9 @@ exports.getAllOrders = async (req, res) => {
 
 // Get order by ID
 exports.getOrderById = async (req, res) => {
-  console.log("first")
   try {
-    const order = await Orderpay.findById(req.params.id).populate('cartId');
-
-    
+    // No need to populate cartId
+    const order = await Orderpay.findById(req.params.id);
     
     if (!order) {
       return res.status(404).json({
@@ -179,12 +192,13 @@ exports.uploadScreenshot = async (req, res) => {
   }
 };
 
-// Get orders by user (assuming cartId is linked to a user)
+// Get orders by cart ID
 exports.getOrdersByCart = async (req, res) => {
   try {
     const { cartId } = req.params;
     
-    const orders = await Orderpay.find({ cartId }).populate('cartId');
+    // No need to populate since we have cart data embedded
+    const orders = await Orderpay.find({ cartId });
     
     res.status(200).json({
       success: true,
@@ -227,12 +241,59 @@ exports.deleteOrder = async (req, res) => {
   }
 };
 
-
-//for user orders
-exports.getMyOrders = async(req,res)=>{
+// Get orders for current user
+exports.getMyOrders = async (req, res) => {
   try {
+    const userId = req.user.id; // Assuming you have authentication middleware that adds user to req
+    
+    // Find orders where the embedded cart data has the user's ID
+    const orders = await Orderpay.find({ "cartData.userId": mongoose.Types.ObjectId(userId) });
+    
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
     
   } catch (error) {
-    
+    res.status(500).json({
+      success: false,
+      message: "Error fetching your orders",
+      error: error.message
+    });
   }
-}
+};
+
+// Get orders for current user
+exports.getMyOrders = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required"
+      });
+    }
+    
+    // Correct way to use ObjectId - use mongoose model's native method
+    const orders = await Orderpay.find({ "cartData.userId": userId })
+      .sort({ createdAt: -1 });
+    
+    // Alternatively you can use:
+    // const orders = await Orderpay.find({ "cartData.userId": new mongoose.Types.ObjectId(userId) })
+    
+    res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders
+    });
+    
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching your orders",
+      error: error.message
+    });
+  }
+};

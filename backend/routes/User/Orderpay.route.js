@@ -11,7 +11,8 @@ const {
   updateOrderStatus,
   uploadScreenshot,
   getOrdersByCart,
-  deleteOrder
+  deleteOrder,
+  getMyOrders
 } = require("../../controllers/User/Orderpay");
 
 // Configure multer for file uploads
@@ -46,5 +47,6 @@ router.get("/:id", authenticateUser, getOrderById);
 router.patch("/:id/status", authenticateUser, updateOrderStatus);
 router.patch("/:id/screenshot", authenticateUser, upload.single("image"), uploadScreenshot);
 router.delete("/:id", authenticateUser, isAdmin, deleteOrder);
+router.get("/my-orders/:userId", getMyOrders);
 
 module.exports = router;
