@@ -4,6 +4,7 @@ import { FaRegMessage } from "react-icons/fa6";
 import { HiMenu, HiX } from "react-icons/hi";
 import { IoMdSettings, IoMdPerson } from "react-icons/io";
 import { FiSearch, FiLogOut } from "react-icons/fi";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -164,9 +165,11 @@ const Navbar = () => {
                 </div>
               </div>
               
-              <a href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+              <a href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                 <IoMdPerson className="w-4 h-4 mr-2 text-purple-500 flex-shrink-0" />
-                <span className="truncate">My Account</span>
+              <Link to={"/profile"}>
+              <span className="truncate">My Account</span>
+              </Link>
               </a>
               
               <a href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
@@ -220,7 +223,9 @@ const Navbar = () => {
               
               <a href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
                 <IoMdPerson className="w-4 h-4 mr-2 text-purple-500 flex-shrink-0" />
-                <span className="truncate">My Account</span>
+                <Link to={"/profile"}>
+              <span className="truncate">My Account</span>
+              </Link>
               </a>
               
               <a href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">

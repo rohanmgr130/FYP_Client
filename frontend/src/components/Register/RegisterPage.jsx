@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faEnvelope, faPhone, faLock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const RegisterPage = () => {
   const [fullName, setFullName] = useState("");
@@ -10,25 +12,23 @@ const RegisterPage = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleRegister = async () => {
-    // Input validation
     if (!fullName || !email || !contact || !password) {
-      alert("All fields are required!");
+      toast.error("All fields are required!");
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      alert("Enter a valid email address!");
+      toast.error("Enter a valid email address!");
       return;
     }
 
     if (password.length < 6) {
-      alert("Password must be at least 6 characters long!");
+      toast.error("Password must be at least 6 characters long!");
       return;
     }
 
     try {
-      // Make POST request to the backend for registration
       const response = await fetch("http://localhost:4000/api/register", {
         method: "POST",
         headers: {
@@ -45,15 +45,17 @@ const RegisterPage = () => {
       const data = await response.json();
 
       if (data.success) {
-        alert("Registration successful!");
-        window.location.href = "/login";
+        toast.success("Registration successful!");
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 1500); // Allow time for the toast to show
       } else {
         console.error("Backend Response:", data);
-        alert(data.message || "Registration failed!");
+        toast.error(data.message || "Registration failed!");
       }
     } catch (error) {
       console.error("Error:", error);
-      alert("Something went wrong. Please try again later!");
+      toast.error("Something went wrong. Please try again later!");
     }
   };
 
@@ -61,8 +63,8 @@ const RegisterPage = () => {
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="bg-white p-6 rounded-lg shadow-lg w-96">
         <h2 className="text-center text-3xl font-bold mb-8 text-gray-700">Register</h2>
-        
-        {/* Full Name Field with Icon */}
+
+        {/* Full Name Field */}
         <div className="relative mb-4">
           <FontAwesomeIcon icon={faUser} className="absolute top-3 left-3 text-gray-400" />
           <input
@@ -74,7 +76,7 @@ const RegisterPage = () => {
           />
         </div>
 
-        {/* Email Field with Icon */}
+        {/* Email Field */}
         <div className="relative mb-4">
           <FontAwesomeIcon icon={faEnvelope} className="absolute top-3 left-3 text-gray-400" />
           <input
@@ -86,24 +88,24 @@ const RegisterPage = () => {
           />
         </div>
 
-        {/* Contact Field with Icon */}
+        {/* Contact Field */}
         <div className="relative mb-4">
           <FontAwesomeIcon icon={faPhone} className="absolute top-3 left-3 text-gray-400" />
           <input
-            type="number" // Ensures that only numbers are allowed
+            type="number"
             placeholder="Contact"
             className="w-full p-3 pl-10 border border-gray-300 rounded-lg"
             value={contact}
             onChange={(e) => {
-              const value = e.target.value.replace(/\D/, ""); // Only allows digits
+              const value = e.target.value.replace(/\D/, "");
               if (value.length <= 10) {
-                setContact(value); // Set contact value if it's less than or equal to 10 digits
+                setContact(value);
               }
             }}
           />
         </div>
 
-        {/* Password Field with Icon */}
+        {/* Password Field */}
         <div className="relative mb-4">
           <FontAwesomeIcon icon={faLock} className="absolute top-3 left-3 text-gray-400" />
           <input
@@ -134,6 +136,9 @@ const RegisterPage = () => {
           Back to Login
         </a>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} />
     </div>
   );
 };

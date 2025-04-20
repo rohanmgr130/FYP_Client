@@ -29,6 +29,7 @@ const MyCart = () => {
       }
 
       const data = await response.json();
+      console.log('data',)
       setCartData(data);
       setLoading(false);
     } catch (error) {

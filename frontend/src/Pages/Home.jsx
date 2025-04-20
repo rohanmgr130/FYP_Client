@@ -9,6 +9,7 @@ import MenuHome from '../components/Home/OurMenu'
 
 
 
+
   const Home = () => {
     return (
       <>
@@ -18,7 +19,7 @@ import MenuHome from '../components/Home/OurMenu'
         <Category/>
         <TodaysSpecial/>
         <MenuHome/>
-        
+
         
         <Footer/>
       </>

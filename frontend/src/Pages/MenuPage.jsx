@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/FooterPart';
 import Card from '../components/Card';
+import { toast } from 'react-toastify';
 
 const OurMenu = () => {
   const navigate = useNavigate();
@@ -35,34 +36,66 @@ const OurMenu = () => {
     return 0;
   };
 
-  // Load favorites from localStorage
-  useEffect(() => {
-    const savedFavorites = localStorage.getItem('favorites');
-    if (savedFavorites) {
-      setFavorites(JSON.parse(savedFavorites));
-    }
-  }, []);
-
   // Function to check if an item is in favorites
   const isFavorited = (itemId) => {
     return favorites.includes(itemId);
   };
 
-  // Function to toggle favorite status
-  const toggleFavorite = (itemId) => {
-    let updatedFavorites;
+  // Toggle favorite status
+  const toggleFavorite = async (itemId) => {
+    const token = localStorage.getItem('token');
     
-    if (isFavorited(itemId)) {
-      // Remove from favorites
-      updatedFavorites = favorites.filter(id => id !== itemId);
-    } else {
-      // Add to favorites
-      updatedFavorites = [...favorites, itemId];
+    // If not logged in, use localStorage and prompt to login
+    if (!token) {
+      // Update local state
+      let updatedFavorites;
+      if (isFavorited(itemId)) {
+        // Remove from favorites
+        updatedFavorites = favorites.filter(id => id !== itemId);
+        toast.success('Removed from favorites');
+      } else {
+        // Add to favorites
+        updatedFavorites = [...favorites, itemId];
+        toast.success('Added to favorites');
+      }
+      
+      // Update state and localStorage
+      setFavorites(updatedFavorites);
+      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+      
+      return;
     }
-    
-    // Update state and localStorage
-    setFavorites(updatedFavorites);
-    localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+
+    // If logged in, use the API
+    try {
+      const isCurrentlyFavorite = favorites.includes(itemId);
+      const endpoint = isCurrentlyFavorite ? 'remove' : 'add';
+      
+      const response = await fetch(`http://localhost:4000/api/favorites/${endpoint}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ itemId })
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to ${isCurrentlyFavorite ? 'remove from' : 'add to'} favorites`);
+      }
+
+      // Update local state
+      if (isCurrentlyFavorite) {
+        setFavorites(prev => prev.filter(id => id !== itemId));
+        toast.success('Removed from favorites');
+      } else {
+        setFavorites(prev => [...prev, itemId]);
+        toast.success('Added to favorites');
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      toast.error(error.message);
+    }
   };
 
   // Modified addToCart function to navigate to cart page after adding
@@ -88,10 +121,14 @@ const OurMenu = () => {
       // Update the cart state with the response from the backend
       setCart(data.cart);
       
+      // Show success toast
+      toast.success(`${item.title} added to cart!`);
+      
       // Navigate to the cart page
       navigate('/cart');
     } catch (error) {
       console.error("Error adding item to cart:", error);
+      toast.error("Failed to add item to cart. Please try again.");
     }
   };
   
@@ -116,10 +153,13 @@ const OurMenu = () => {
     } catch (error) {
       console.error('Error fetching menu details:', error.message);
       setError('Failed to load menu items. Please try again later.');
+      toast.error('Failed to load menu items. Please try again later.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  console.log(menuItems)
 
   // Fetch menu items on component mount
   useEffect(() => {
@@ -178,6 +218,7 @@ const OurMenu = () => {
     setActiveType("All");
     setPriceRange(1250);
     setSearchQuery("");
+    toast.info("Filters have been reset");
   };
 
   // Get background color based on item type
@@ -208,19 +249,6 @@ const OurMenu = () => {
       </div>
     );
   }
-
-  // Enhanced Card component that includes favorites functionality
-  const EnhancedCard = ({ item }) => {
-    // Using the original Card component structure but adding favorites functionality
-    return (
-      <Card 
-        item={item} 
-        addToCart={addToCart}
-        isFavorited={isFavorited(item._id)}
-        toggleFavorite={() => toggleFavorite(item._id)}
-      />
-    );
-  };
 
   return (
     <>
@@ -345,12 +373,13 @@ const OurMenu = () => {
         <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.length > 0 ? (
             filteredItems.map((item, index) => (
-              <div key={index}>
-                {/* Render the original Card component but pass necessary props */}
-                <div className="relative">
-                  <Card item={item} addToCart={addToCart} />
-                  
-                </div>
+              <div key={item._id || index} className="relative">
+                <Card 
+                  item={item} 
+                  addToCart={addToCart}
+                  isFavorited={isFavorited(item._id)}
+                  toggleFavorite={() => toggleFavorite(item._id)}
+                />
               </div>
             ))
           ) : (

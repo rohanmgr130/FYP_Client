@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
-import { CloudDrizzle } from 'lucide-react';
-import { Router, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Toaster, toast } from 'react-hot-toast';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -10,60 +10,72 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const userID = localStorage.getItem('userID');
-  const navigate=useNavigate()
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert('Please fill in all fields');
+      toast.error('Please fill in all fields');
       return;
     }
-  
+
     setLoading(true);
     setError(null);
-  
+
     try {
       const response = await fetch("http://localhost:4000/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
+        body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
-  
+
       if (data.success) {
         localStorage.setItem('token', data.token);
-        localStorage.setItem('email', data.email)
-        localStorage.setItem('fullname', data.fullname)
-        localStorage.setItem('id', data.id)
-  
-        alert('Login successful!');
-        navigate("/")
-        ; // Reload to apply changes
+        localStorage.setItem('email', data.email);
+        localStorage.setItem('fullname', data.fullname);
+        localStorage.setItem('id', data.id);
+
+        toast.success('Login successful!');
+        setTimeout(() => navigate("/"), 1000);
       } else {
         setError(data.message || 'Login failed!');
+        toast.error(data.message || 'Login failed!');
       }
     } catch (error) {
       setError('Something went wrong. Please try again later.');
+      toast.error('Something went wrong. Please try again later.');
     } finally {
       setLoading(false);
     }
-
   };
-  
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-blue-100">
+    <div
+      className="flex justify-center items-center min-h-screen bg-gradient-to-br from-pink-100 to-blue-100"
+      onKeyDown={handleKeyDown}
+      tabIndex="0"
+    >
+      <Toaster position="top-right" />
       <div className="relative bg-white p-8 rounded-xl shadow-lg w-96">
-        <div className="absolute top-[-70px] left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full bg-white bg-cover bg-center shadow-lg" style={{ backgroundImage: 'url("https://i.pinimg.com/1200x/9e/95/49/9e9549dcfbafb4a017f179ca1f9c0e46.jpg")' }}></div>
+        <div
+          className="absolute top-[-70px] left-1/2 transform -translate-x-1/2 w-24 h-24 rounded-full bg-white bg-cover bg-center shadow-lg"
+          style={{
+            backgroundImage:
+              'url("https://i.pinimg.com/1200x/9e/95/49/9e9549dcfbafb4a017f179ca1f9c0e46.jpg")',
+          }}
+        ></div>
         <h2 className="mt-16 text-2xl font-semibold text-gray-800 text-center">Login</h2>
 
-        {/* Email Field with Icon */}
+        {/* Email Field */}
         <div className="relative mt-4">
           <FontAwesomeIcon icon={faEnvelope} className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-400" />
           <input
@@ -75,11 +87,11 @@ const LoginPage = () => {
           />
         </div>
 
-        {/* Password Field with Icon and Toggle Visibility */}
+        {/* Password Field */}
         <div className="relative mt-4">
           <FontAwesomeIcon icon={faLock} className="absolute top-1/2 left-2 transform -translate-y-1/2 text-gray-400" />
           <input
-            type={isPasswordVisible ? "password" : "text"}
+            type={isPasswordVisible ? "text" : "password"}
             placeholder="Password"
             className="w-full p-3 pl-10 mt-2 border rounded-lg text-lg border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             value={password}
@@ -94,7 +106,9 @@ const LoginPage = () => {
 
         {/* Login Button */}
         <button
-          className={`w-full p-3 mt-6 rounded-lg text-lg font-semibold ${loading ? 'bg-gray-400' : 'bg-green-500 text-white'} disabled:opacity-50`}
+          className={`w-full p-3 mt-6 rounded-lg text-lg font-semibold ${
+            loading ? 'bg-gray-400' : 'bg-green-500 text-white'
+          } disabled:opacity-50`}
           onClick={handleLogin}
           disabled={loading}
         >
@@ -104,12 +118,16 @@ const LoginPage = () => {
         {/* Error Message */}
         {error && <div className="text-red-500 text-sm text-center mt-2">{error}</div>}
 
-        {/* Links for Forgot Password and Register */}
+        {/* Links */}
         <div className="text-center mt-4">
-          <a href="#" className="text-blue-500 text-sm hover:underline">Forgot Password?</a>
+          <a href="#" className="text-blue-500 text-sm hover:underline">
+            Forgot Password?
+          </a>
         </div>
         <div className="text-center mt-2">
-          <a href="/register" className="text-blue-500 text-sm hover:underline">Create an Account</a>
+          <a href="/register" className="text-blue-500 text-sm hover:underline">
+            Create an Account
+          </a>
         </div>
       </div>
     </div>

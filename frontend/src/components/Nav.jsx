@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-// import { IoIosSettings } from "react-icons/io";
 import { IoCartOutline } from "react-icons/io5";
 import { FaRegMessage } from "react-icons/fa6";
+import { Link } from "react-router-dom";
 
 function Nav() {
   // State to track scroll position
@@ -111,11 +111,13 @@ function Nav() {
               </div>
             </div>
             
-            <a href="/account" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
+            <a href="/" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
               <svg className="w-4 h-4 mr-2 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
               </svg>
+              <Link to={"/profile"}>
               <span className="truncate">My Account</span>
+              </Link>
             </a>
             
             <a href="/settings" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center">
