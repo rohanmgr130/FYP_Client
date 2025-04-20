@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Info } from 'lucide-react';
 
 // Cash payment component
 const CashPayment = ({ cartTotal, onPlaceOrder, loading, checkoutLoading }) => {
@@ -43,7 +43,7 @@ const CashPayment = ({ cartTotal, onPlaceOrder, loading, checkoutLoading }) => {
             ) : toast.type === "success" ? (
               <CheckCircle className="mr-2 h-5 w-5" />
             ) : (
-              <CheckCircle className="mr-2 h-5 w-5" />
+              <Info className="mr-2 h-5 w-5" />
             )}
             <span>{toast.message}</span>
           </div>
@@ -55,7 +55,7 @@ const CashPayment = ({ cartTotal, onPlaceOrder, loading, checkoutLoading }) => {
           </button>
         </div>
       )}
-
+      
       <h2 className="text-xl font-semibold mb-4">Cash Payment Details</h2>
       
       <div className="mb-6">

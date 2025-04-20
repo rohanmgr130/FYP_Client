@@ -14,67 +14,57 @@ const OrderHistory = () => {
   // Fetch user ID from localStorage
   const userId = localStorage.getItem("id");
 
-  // Fetch order history for the user from backend
-  const getOrderHistory = async () => {
-    if (!userId) {
-      setError("User ID not found in localStorage");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const res = await fetch(`http://localhost:4000/api/orderhistory/user/${userId}`);
-      
-      const data = await res.json();
-      console.log("Order history data:", data);
-      
-      // If API returns success: true and has history data
-      if (data.success && data.history) {
-        setOrderHistory(data.history);
-        
-        // Fetch details for each order
-        if (data.history.orders && data.history.orders.length > 0) {
-          await fetchOrderDetails(data.history.orders);
-        }
-      } else {
-        // Handle the case when API returns success: false or no history
-        setOrderHistory(null);
-      }
-      
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching order history:", err);
-      setError(err.message);
-      setLoading(false);
-    }
-  };
-
-  // Fetch details for each order ID
-  const fetchOrderDetails = async (orderIds) => {
-    const details = {};
-    
-    for (const orderId of orderIds) {
-      try {
-        const res = await fetch(`http://localhost:4000/api/order/${orderId}`);
-        
-        if (res.ok) {
-          const data = await res.json();
-          details[orderId] = data.order;
-        } else {
-          console.error(`Could not fetch details for order ${orderId}`);
-          details[orderId] = { error: "Could not load order details" };
-        }
-      } catch (err) {
-        console.error(`Error fetching order ${orderId}:`, err);
-        details[orderId] = { error: "Error loading order details" };
-      }
-    }
-    
-    setOrderDetails(details);
-  };
-
+  // Create a custom order history structure if it doesn't exist in backend
   useEffect(() => {
+    const getOrderHistory = async () => {
+      if (!userId) {
+        setError("User ID not found in localStorage");
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        // First, try to get all orders by user ID
+        const res = await fetch(`http://localhost:4000/api/order/my-orders/${userId}`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        
+        const data = await res.json();
+        
+        if (data.success && data.orders && data.orders.length > 0) {
+          // If API returns orders, create local order history structure
+          const history = {
+            userId,
+            orders: data.orders.map(order => order._id),
+            createdAt: new Date().toISOString()
+          };
+          
+          setOrderHistory(history);
+          
+          // Store order details in state
+          const detailsMap = {};
+          data.orders.forEach(order => {
+            detailsMap[order._id] = order;
+          });
+          
+          setOrderDetails(detailsMap);
+        } else {
+          // Handle the case when API returns no orders
+          setOrderHistory(null);
+        }
+        
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
     getOrderHistory();
   }, [userId]);
 
@@ -85,15 +75,11 @@ const OrderHistory = () => {
     }
     
     try {
-      const res = await fetch(`http://localhost:4000/api/orderhistory`, {
+      const res = await fetch(`http://localhost:4000/api/order/${orderId}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: userId,
-          orderId: orderId
-        }),
+        }
       });
       
       if (!res.ok) {
@@ -103,8 +89,18 @@ const OrderHistory = () => {
       const data = await res.json();
       console.log("Order deleted:", data);
       
-      // Refresh the list after deletion
-      getOrderHistory();
+      // Remove order from local state
+      if (orderHistory && orderHistory.orders) {
+        setOrderHistory({
+          ...orderHistory,
+          orders: orderHistory.orders.filter(id => id !== orderId)
+        });
+        
+        // Also remove from details
+        const newDetails = { ...orderDetails };
+        delete newDetails[orderId];
+        setOrderDetails(newDetails);
+      }
     } catch (err) {
       console.error("Error deleting order:", err);
       alert("Error deleting order. Please try again.");
@@ -112,9 +108,31 @@ const OrderHistory = () => {
   };
 
   // View order details
-  const viewOrderDetails = (orderId) => {
+  const viewOrderDetails = async (orderId) => {
     setSelectedOrder(orderId);
     setViewModalOpen(true);
+    
+    // Optionally fetch the latest details from the server
+    try {
+      // Correct endpoint
+      const res = await fetch(`http://localhost:4000/api/order/${orderId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      
+      if (data.success && data.order) {
+        // Update this specific order's details with fresh data
+        setOrderDetails(prevDetails => ({
+          ...prevDetails,
+          [orderId]: data.order
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching order details:", err);
+    }
   };
 
   // Function to format date
@@ -129,8 +147,14 @@ const OrderHistory = () => {
 
   // Calculate total items in order
   const countItems = (order) => {
-    if (!order || !order.items) return "N/A";
-    return order.items.length;
+    if (!order || !order.cartData || !order.cartData.items) return 0;
+    return order.cartData.items.length;
+  };
+
+  // Format currency
+  const formatCurrency = (amount) => {
+    if (amount === undefined || amount === null) return "N/A";
+    return `Rs. ${parseFloat(amount).toFixed(2)}`;
   };
 
   // Close modal
@@ -163,7 +187,7 @@ const OrderHistory = () => {
             <p className="text-xl text-red-600 font-bold mb-2">Error</p>
             <p className="text-gray-700">{error}</p>
             <button 
-              onClick={() => getOrderHistory()}
+              onClick={() => window.location.reload()}
               className="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
             >
               Try Again
@@ -195,6 +219,7 @@ const OrderHistory = () => {
                     <th className="py-3 px-6 text-left text-sm font-medium text-gray-600">Items</th>
                     <th className="py-3 px-6 text-left text-sm font-medium text-gray-600">Total Amount</th>
                     <th className="py-3 px-6 text-center text-sm font-medium text-gray-600">Status</th>
+                    <th className="py-3 px-6 text-center text-sm font-medium text-gray-600">Payment Method</th>
                     <th className="py-3 px-6 text-center text-sm font-medium text-gray-600">Actions</th>
                   </tr>
                 </thead>
@@ -204,26 +229,30 @@ const OrderHistory = () => {
                     return (
                       <tr key={orderId} className="border-t hover:bg-gray-50">
                         <td className="py-4 px-6 text-sm text-gray-800 font-medium">
-                          {/* #{orderId.substring(orderId.length - 8)} */}
+                          #{orderId.substring(orderId.length - 8)}
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-600">
-                          {formatDate(order.createdAt || orderHistory.createdAt)}
+                          {formatDate(order.createdAt)}
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-800">
-                          {order.items ? order.items.length : 'N/A'} items
+                          {countItems(order)} items
                         </td>
                         <td className="py-4 px-6 text-sm text-gray-800 font-medium">
-                          ${order.additionalInfo?.totalAmount?.toFixed(2) || "N/A"}
+                          {formatCurrency(order.cartData?.finalTotal || order.additionalInfo?.totalAmount)}
                         </td>
                         <td className="py-4 px-6 text-center">
                           <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
-                            order.status === 'completed' ? 'bg-green-100 text-green-800' :
-                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                            order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                            order.orderStatus === 'completed' ? 'bg-green-100 text-green-800' :
+                            order.orderStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            order.orderStatus === 'verified' ? 'bg-blue-100 text-blue-800' :
+                            order.orderStatus === 'failed' ? 'bg-red-100 text-red-800' :
                             'bg-gray-100 text-gray-800'
                           }`}>
-                            {order.status || "Processing"}
+                            {order.orderStatus || "Processing"}
                           </span>
+                        </td>
+                        <td className="py-4 px-6 text-sm text-center text-gray-800 capitalize">
+                          {order.orderMethod || "N/A"}
                         </td>
                         <td className="py-4 px-6 text-center">
                           <div className="flex justify-center space-x-4">
@@ -296,21 +325,21 @@ const OrderHistory = () => {
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Order Status</h3>
-                      <p className="text-gray-800 capitalize">{orderDetails[selectedOrder].status || "Processing"}</p>
+                      <p className="text-gray-800 capitalize">{orderDetails[selectedOrder].orderStatus || "Processing"}</p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Payment Method</h3>
-                      <p className="text-gray-800 capitalize">{orderDetails[selectedOrder].paymentMethod || "Not specified"}</p>
+                      <p className="text-gray-800 capitalize">{orderDetails[selectedOrder].orderMethod || "Not specified"}</p>
                     </div>
                     <div>
                       <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
                       <p className="text-gray-800 font-medium">
-                        ${orderDetails[selectedOrder].additionalInfo?.totalAmount?.toFixed(2) || "N/A"}
+                        {formatCurrency(orderDetails[selectedOrder].cartData?.finalTotal || orderDetails[selectedOrder].additionalInfo?.totalAmount)}
                       </p>
                     </div>
                   </div>
                   
-                  {orderDetails[selectedOrder].items && orderDetails[selectedOrder].items.length > 0 ? (
+                  {orderDetails[selectedOrder].cartData && orderDetails[selectedOrder].cartData.items && orderDetails[selectedOrder].cartData.items.length > 0 ? (
                     <div>
                       <h3 className="font-medium text-gray-700 mb-3">Order Items</h3>
                       <div className="border rounded-lg overflow-hidden">
@@ -324,23 +353,39 @@ const OrderHistory = () => {
                             </tr>
                           </thead>
                           <tbody className="bg-white divide-y divide-gray-200">
-                            {orderDetails[selectedOrder].items.map((item, index) => (
+                            {orderDetails[selectedOrder].cartData.items.map((item, index) => (
                               <tr key={index}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                  {item.name || item.itemName || "Unknown Item"}
+                                  {item.productId ? (typeof item.productId === 'object' ? item.productId.name : "Product Item") : "Unknown Item"}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                  {item.quantity || 1}
+                                  {item.productQuantity || 1}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                  ${item.price?.toFixed(2) || "N/A"}
+                                  {formatCurrency(item.price)}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">
-                                  ${((item.price || 0) * (item.quantity || 1)).toFixed(2)}
+                                  {formatCurrency(item.total)}
                                 </td>
                               </tr>
                             ))}
                           </tbody>
+                          <tfoot className="bg-gray-50">
+                            <tr>
+                              <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-500">Order Total:</td>
+                              <td className="px-6 py-3 text-sm font-bold text-gray-900">{formatCurrency(orderDetails[selectedOrder].cartData.orderTotal)}</td>
+                            </tr>
+                            {orderDetails[selectedOrder].cartData.discount > 0 && (
+                              <tr>
+                                <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-500">Discount:</td>
+                                <td className="px-6 py-3 text-sm font-medium text-green-600">-{formatCurrency(orderDetails[selectedOrder].cartData.discount)}</td>
+                              </tr>
+                            )}
+                            <tr>
+                              <td colSpan="3" className="px-6 py-3 text-right text-sm font-medium text-gray-700">Final Total:</td>
+                              <td className="px-6 py-3 text-sm font-bold text-gray-900">{formatCurrency(orderDetails[selectedOrder].cartData.finalTotal)}</td>
+                            </tr>
+                          </tfoot>
                         </table>
                       </div>
                     </div>
@@ -348,15 +393,26 @@ const OrderHistory = () => {
                     <p className="text-gray-500 italic">No item details available</p>
                   )}
                   
-                  {orderDetails[selectedOrder].shippingAddress && (
+                  {orderDetails[selectedOrder].additionalInfo && orderDetails[selectedOrder].additionalInfo.shippingAddress && (
                     <div className="mt-6">
                       <h3 className="font-medium text-gray-700 mb-2">Shipping Address</h3>
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <p className="text-gray-800">
-                          {orderDetails[selectedOrder].shippingAddress.street}, {orderDetails[selectedOrder].shippingAddress.city}<br />
-                          {orderDetails[selectedOrder].shippingAddress.state}, {orderDetails[selectedOrder].shippingAddress.zip}
+                          {orderDetails[selectedOrder].additionalInfo.shippingAddress.street}, {orderDetails[selectedOrder].additionalInfo.shippingAddress.city}<br />
+                          {orderDetails[selectedOrder].additionalInfo.shippingAddress.state}, {orderDetails[selectedOrder].additionalInfo.shippingAddress.zip}
                         </p>
                       </div>
+                    </div>
+                  )}
+
+                  {orderDetails[selectedOrder].screenshot && (
+                    <div className="mt-6">
+                      <h3 className="font-medium text-gray-700 mb-2">Payment Screenshot</h3>
+                      <img 
+                        src={`http://localhost:4000/${orderDetails[selectedOrder].screenshot}`} 
+                        alt="Payment screenshot" 
+                        className="max-w-full h-auto border rounded-lg"
+                      />
                     </div>
                   )}
                 </div>
