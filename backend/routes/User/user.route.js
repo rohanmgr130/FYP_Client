@@ -1,4 +1,3 @@
-
 const express = require("express")
 const registerUser = require("../../controllers/User/Register")
 const loginUser = require("../../controllers/User/Login")
@@ -9,23 +8,20 @@ const {
     removeFromCart,
     updateCartItem,
     getCart,
-    applyPromoCode
-}
-= require("../../controllers/User/MyCart")
+    applyPromoCode,
+    clearCart
+} = require("../../controllers/User/MyCart")
 
-
-//routes
-
+// User authentication routes
 userRouter.post("/register", registerUser)
 userRouter.post("/login", loginUser)
 
-
-//cart items
+// Cart routes
 userRouter.post("/add-to-cart", addToCart)
 userRouter.post("/remove-from-cart", removeFromCart)
 userRouter.post("/update-cart-item", updateCartItem)
 userRouter.get("/get-cart/:id", getCart)
 userRouter.post("/apply-promo-code", applyPromoCode)
+userRouter.post("/clear-cart", clearCart)  // I've added this based on your controller
 
-
-module.exports = {userRouter}
+module.exports = { userRouter } 

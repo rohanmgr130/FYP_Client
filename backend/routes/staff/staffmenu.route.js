@@ -11,7 +11,8 @@ const {
 } = require("../../controllers/staff/menus");
 
 // Use Memory Storage for file uploads
-const upload  = require('../../utils/multer.js')
+const upload  = require('../../utils/multer.js');
+const loginstaff = require("../../controllers/staff/Login.js");
 
 // Get all menu items
 router.get("/get-all-menu", getAllMenuItems);
@@ -30,5 +31,9 @@ router.delete("/delete-menu/:id", deleteMenuItem);
 
 //get todays special menu
 router.get("/todays-special", getTodaysSpecialMenu);
+
+
+//login
+router.post("/login", loginstaff)
 
 module.exports = router;

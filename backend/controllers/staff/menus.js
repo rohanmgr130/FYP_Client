@@ -33,40 +33,6 @@ exports.getTodaysSpecialMenu = async (req, res) => {
 }
 
 // Add a new menu item
-// exports.addMenuItem = async (req, res) => {
-//   try {
-//     const { title, price, type, categories } = req.body;
-//     const image = req.file;
-
-//     // Validate required fields
-//     if (!title || !price || !type || !categories) {
-//       return res.status(400).json({ message: "All fields are required" });
-//     }
-//     if (!image) {
-//       return res.status(400).json({ message: "Image is required" });
-//     }
-
-//     // Get image path
-//     const imagePath = `/uploads/${image.filename}`;
-
-//     // Ensure categories is an array
-//     const categoryArray = Array.isArray(categories) ? categories : categories.split(",").map(cat => cat.trim().toLowerCase());
-
-//     const newMenuItem = new Menu({
-//       title,
-//       price,
-//       type,
-//       image: imagePath,
-//       categories: categoryArray,
-//     });
-
-//     await newMenuItem.save();
-//     res.status(201).json(newMenuItem);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error adding menu item", error });
-//   }
-// };
-// Add a new menu item
 exports.addMenuItem = async (req, res) => {
   try {
     const { title, price, type, menuType, categories } = req.body;

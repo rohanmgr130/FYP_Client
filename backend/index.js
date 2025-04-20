@@ -5,17 +5,16 @@ require("dotenv").config();
 const connectDB = require("./mongodb/ConnectDB"); // MongoDB connection
 const adminRouter = require("./routes/admin/admin.route"); // Admin routes (if applicable)
 const staffRouter = require("./routes/staff/staffmenu.route"); // Staff menu routes
-
+const orderRouter = require("./routes/User/Orderpay.route")
 const { userRouter } = require("./routes/User/user.route");
-// const Ordershistory = require("./models/user/Ordershistory");
-// const regRouter = require("./routes/User/user.route");
+const favoritesRouter = require("./routes/User/favorite.route");
+const profileRouter = require("./routes/User/profile.route");
+const OrderHistoryRouter = require("./routes/User/orderhistory.route");
+
+
 
 
 const path = require('path');
-
-
-
-
 const app = express();
 const PORT = 4000;
 
@@ -34,10 +33,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Define API routes
 app.use("/api/admin", adminRouter); // Admin-related routes (if any)
 app.use("/api/staff", staffRouter);
-
 app.use("/api", userRouter);
-// app.use("/api/orders",Ordershistory);
-
+app.use("/api/order", orderRouter);
+app.use("/api/favorites", favoritesRouter);
+app.use("/api/profile", profileRouter);
+app.use("/api/orderhistory", OrderHistoryRouter);
 
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running okay!" });
@@ -47,3 +47,4 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+

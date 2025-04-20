@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs')
+const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const User = require('../../models/user/User')
 
@@ -15,16 +15,16 @@ const User = require('../../models/user/User')
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    // // Hash password
+    // const salt = await bcrypt.genSalt(10);
+    // const hashedPassword = await bcrypt.hash(password, salt);
 
     // Create new user
     const newUser = new User({
       fullname:fullName,
       email,
       contact,
-      password: hashedPassword,
+      password,
     });
 
     // Save user to database

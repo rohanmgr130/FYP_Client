@@ -1,19 +1,25 @@
 const express = require("express");
-const router = express.Router();
-
+const OrderHistoryRouter = express.Router();
 const {
-  getAllOrders,
-  createOrder,
-  deleteOrder,
+  getAllOrderHistories,
+  getOrderHistoryByUserId,
+  addOrderToHistory,
+  deleteOrderFromHistory
 } = require("../../controllers/User/Orderhistory");
 
-// Route to get all orders
-router.get("/", getAllOrders);
+// Route to get all order histories
+OrderHistoryRouter.get("/", getAllOrderHistories);
 
-// Route to create a new order
-router.post("/", createOrder);
+// Route to get order history by user ID
+OrderHistoryRouter.get("/user/:userId", getOrderHistoryByUserId);
 
-// Route to delete an order
-router.delete("/:id", deleteOrder);
+// Route to add order to history
+OrderHistoryRouter.post("/", addOrderToHistory);
 
-module.exports = router;
+// Route to delete an order from history (original DELETE method)
+OrderHistoryRouter.delete("/", deleteOrderFromHistory);
+
+// New route for POST delete - to match the frontend change
+OrderHistoryRouter.post("/delete", deleteOrderFromHistory);
+
+module.exports = OrderHistoryRouter;

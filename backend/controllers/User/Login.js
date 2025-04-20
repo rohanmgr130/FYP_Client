@@ -1,20 +1,24 @@
-const bcrypt = require("bcryptjs")
+const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const User = require("../../models/user/User")
+
 
 // Login Controller
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
+  
+
   try {
     // Find user by email
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email })
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
-
+    console.log("password", password, user.password)
     // Compare password with hashed password
-    const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch = bcrypt.compareSync(password, user.password)
+ 
     if (!isMatch) {
       return res.status(400).json({success:false, message: "Invalid credentials" });
     }
@@ -33,7 +37,8 @@ const loginUser = async (req, res) => {
       fullname:user.fullname
     });
   } catch (error) {
-    console.error(error);
+    // console.error(error);
+    console.log("login error",error)
     res.status(500).json({ success:true, message: "Server error" });
   }
 };

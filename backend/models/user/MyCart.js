@@ -25,6 +25,11 @@ const CartSchema = new mongoose.Schema({
             total: {
                 type: Number,
                 required: true
+            },
+            isPlacedOrder: {
+                type: Boolean,
+                required: true,
+                default: false
             }
         }
     ],
@@ -44,12 +49,23 @@ const CartSchema = new mongoose.Schema({
         type: Number,
         default: 0
     }
-}, { timestamps: true });
+}, { 
+    timestamps: true
+ });
 
 // Middleware to calculate total cost
 CartSchema.pre('save', function (next) {
+    // Calculate order total from items
     this.orderTotal = this.items.reduce((sum, item) => sum + item.total, 0);
+    
+    // Ensure discount doesn't exceed order total
+    if (this.discount > this.orderTotal) {
+        this.discount = this.orderTotal;
+    }
+    
+    // Calculate final total
     this.finalTotal = this.orderTotal - this.discount;
+    
     next();
 });
 
