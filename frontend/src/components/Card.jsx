@@ -220,6 +220,21 @@ const Card = memo(({ item, addToCart, isFavorited = false, toggleFavorite }) => 
     setIsFavorite(isFavorited);
   }, [isFavorited]);
 
+  // Function to clean category strings
+  const cleanCategoryString = useCallback((category) => {
+    if (typeof category === 'string') {
+      // Remove brackets, quotes, and extra characters
+      return category.replace(/[\[\]"']/g, '');
+    }
+    
+    if (Array.isArray(category)) {
+      // If it's an array, return the first item without brackets
+      return category[0]?.toString().replace(/[\[\]"']/g, '') || '';
+    }
+    
+    return String(category).replace(/[\[\]"']/g, '');
+  }, []);
+
   // Helper function to get the appropriate icon based on item type
   const getTypeIcon = useCallback((type) => {
     if (!type) return null;
@@ -475,20 +490,28 @@ const Card = memo(({ item, addToCart, isFavorited = false, toggleFavorite }) => 
           <div className="ml-2">{item.type && getTypeIcon(item.type)}</div>
         </div>
 
-        {/* Categories */}
+        {/* Categories - With clean display */}
         {item.categories && item.categories.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-4">
-            {item.categories.map((category, index) => (
-              <span
-                key={index}
-                className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full"
-              >
-                {category
-                  .split('-')
-                  .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(' ')}
-              </span>
-            ))}
+            {item.categories.map((category, index) => {
+              // Clean the category
+              const cleanedCategory = cleanCategoryString(category);
+              
+              // Skip empty categories
+              if (!cleanedCategory) return null;
+              
+              return (
+                <span
+                  key={index}
+                  className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-full"
+                >
+                  {cleanedCategory
+                    .split('-')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ')}
+                </span>
+              );
+            })}
           </div>
         )}
 

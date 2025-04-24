@@ -247,7 +247,7 @@ const MyCart = () => {
           <p className="text-gray-500 mb-8">Looks like you haven't added any delicious items to your cart yet</p>
           <button 
             className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-blue-600 text-white font-medium rounded-lg hover:shadow-lg transition-all duration-300"
-            onClick={() => navigate('/menu')}
+            onClick={() => navigate('/')}
           >
             Explore Menu
           </button>

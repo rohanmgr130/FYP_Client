@@ -98,7 +98,7 @@ const FavoriteItem = memo(({ item, onRemove, onAddToCart, onViewDetails, isRemov
       <div className="p-4 flex-grow flex flex-col">
         <div className="flex justify-between items-start mb-2">
           <h2 className="text-lg font-bold text-gray-900 dark:text-white">{item.title}</h2>
-          <div className="font-bold text-blue-600 dark:text-blue-400 ml-2">₹{item.price}</div>
+          <div className="font-bold text-blue-600 dark:text-blue-400 ml-2">Rs{item.price}</div>
         </div>
 
         {/* Description */}
@@ -398,10 +398,10 @@ function MyFavorite() {
   // Price range options
   const priceOptions = useMemo(() => [
     { value: 'all', label: 'All Prices' },
-    { value: 'under100', label: 'Under ₹100' },
-    { value: '100to200', label: '₹100 to ₹200' },
-    { value: '200to300', label: '₹200 to ₹300' },
-    { value: '300plus', label: 'Above ₹300' }
+    { value: 'under100', label: 'Under Rs. 100' },
+    { value: '100to200', label: 'Rs. 100 to Rs. 200' },
+    { value: '200to300', label: 'Rs. 200 to Rs. 300' },
+    { value: '300plus', label: 'Above Rs. 300' }
   ], []);
   
   // Handle removing from favorites
@@ -539,7 +539,7 @@ function MyFavorite() {
               
               <FilterDropdown
                 label="Price"
-                icon={<span className="text-gray-500 dark:text-gray-400">₹</span>}
+                icon={<span className="text-gray-500 dark:text-gray-400">Rs</span>}
                 value={filters.priceRange}
                 onChange={(value) => updateFilter('priceRange', value)}
                 options={priceOptions}

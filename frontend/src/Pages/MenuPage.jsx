@@ -25,6 +25,21 @@ const OurMenu = () => {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeType, setActiveType] = useState("All");
 
+  // Function to clean category strings
+  const cleanCategoryString = (category) => {
+    if (typeof category === 'string') {
+      // Remove brackets, quotes, and extra characters
+      return category.replace(/[\[\]"']/g, '');
+    }
+    
+    if (Array.isArray(category)) {
+      // If it's an array, return the first item without brackets
+      return category[0]?.toString().replace(/[\[\]"']/g, '') || '';
+    }
+    
+    return String(category).replace(/[\[\]"']/g, '');
+  };
+
   // Helper function to safely convert price to a number
   const safePrice = (price) => {
     if (typeof price === 'number') return price;
@@ -148,8 +163,21 @@ const OurMenu = () => {
       }
   
       const data = await response.json();
-      setMenuItems(data);
-      setFilteredItems(data); // Initially set filtered items to all menu items
+      
+      // Clean categories in the data
+      const cleanedData = data.map(item => {
+        if (item.categories) {
+          // Clean each category in the array
+          return {
+            ...item,
+            categories: item.categories.map(cat => cleanCategoryString(cat))
+          };
+        }
+        return item;
+      });
+      
+      setMenuItems(cleanedData);
+      setFilteredItems(cleanedData); // Initially set filtered items to all menu items
     } catch (error) {
       console.error('Error fetching menu details:', error.message);
       setError('Failed to load menu items. Please try again later.');
@@ -159,7 +187,10 @@ const OurMenu = () => {
     }
   };
 
-  console.log(menuItems)
+  // For debugging
+  useEffect(() => {
+    console.log("Menu items with cleaned categories:", menuItems);
+  }, [menuItems]);
 
   // Fetch menu items on component mount
   useEffect(() => {
@@ -168,7 +199,14 @@ const OurMenu = () => {
 
   // Extract all unique categories and types from menu items
   const getUniqueCategories = () => {
-    const allCategories = menuItems.flatMap(item => item.categories || []);
+    const allCategories = menuItems.flatMap(item => {
+      if (!item.categories) return [];
+      
+      // Ensure each category is clean
+      return item.categories.map(cat => cleanCategoryString(cat));
+    });
+    
+    // Use Set to get unique categories and convert back to array
     return ["All", ...new Set(allCategories)];
   };
 
@@ -183,9 +221,13 @@ const OurMenu = () => {
     
     // Filter by category
     if (activeCategory !== "All") {
-      result = result.filter(item => 
-        item.categories && item.categories.includes(activeCategory)
-      );
+      result = result.filter(item => {
+        if (!item.categories) return false;
+        
+        // Clean categories for comparison
+        const cleanCategories = item.categories.map(cat => cleanCategoryString(cat).toLowerCase());
+        return cleanCategories.includes(activeCategory.toLowerCase());
+      });
     }
     
     // Filter by type (vegetarian, non-vegetarian, drinks, etc.)
@@ -294,6 +336,7 @@ const OurMenu = () => {
                       ? 'bg-blue-500 text-white' 
                       : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
                 >
+                  {/* Display clean category name */}
                   {category}
                 </button>
               ))}
@@ -358,6 +401,7 @@ const OurMenu = () => {
                   ? 'bg-blue-500 text-white' 
                   : 'bg-gray-200 text-gray-800 hover:bg-gray-300'}`}
             >
+              {/* Display clean category name */}
               {category}
             </button>
           ))}
@@ -375,7 +419,11 @@ const OurMenu = () => {
             filteredItems.map((item, index) => (
               <div key={item._id || index} className="relative">
                 <Card 
-                  item={item} 
+                  item={{
+                    ...item,
+                    // Pass cleaned categories to Card component
+                    categories: item.categories ? item.categories.map(cat => cleanCategoryString(cat)) : []
+                  }}
                   addToCart={addToCart}
                   isFavorited={isFavorited(item._id)}
                   toggleFavorite={() => toggleFavorite(item._id)}

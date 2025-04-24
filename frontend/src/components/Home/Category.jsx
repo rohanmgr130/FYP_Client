@@ -80,3 +80,157 @@ const Category = () => {
 };
 
 export default Category;
+
+
+// import React, { useState, useEffect } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// // import { ChevronRight } from 'lucide-react';
+
+// const Category = () => {
+//   const [categories, setCategories] = useState([]);
+//   const [isLoading, setIsLoading] = useState(true);
+//   const [error, setError] = useState(null);
+//   const navigate = useNavigate();
+
+//   // Fetch categories from the backend
+//   useEffect(() => {
+//     const fetchCategories = async () => {
+//       try {
+//         setIsLoading(true);
+//         const response = await fetch('http://localhost:4000/api/categories', {
+//           method: 'GET',
+//           headers: {
+//             'Content-Type': 'application/json',
+//           },
+//         });
+
+//         if (!response.ok) {
+//           throw new Error(`Failed to fetch categories: ${response.status} ${response.statusText}`);
+//         }
+
+//         const data = await response.json();
+        
+//         // Clean the category names if needed
+//         const cleanedData = data.map(category => ({
+//           ...category,
+//           name: cleanCategoryString(category.name)
+//         }));
+        
+//         setCategories(cleanedData);
+//       } catch (error) {
+//         console.error('Error fetching categories:', error.message);
+//         setError('Failed to load categories. Please try again later.');
+//       } finally {
+//         setIsLoading(false);
+//       }
+//     };
+
+//     fetchCategories();
+//   }, []);
+
+//   // Function to clean category strings
+//   const cleanCategoryString = (category) => {
+//     if (typeof category === 'string') {
+//       // Remove brackets, quotes, and extra characters
+//       return category.replace(/[\[\]"']/g, '');
+//     }
+    
+//     if (Array.isArray(category)) {
+//       // If it's an array, return the first item without brackets
+//       return category[0]?.toString().replace(/[\[\]"']/g, '') || '';
+//     }
+    
+//     return String(category).replace(/[\[\]"']/g, '');
+//   };
+  
+//   // Handle category click
+//   const handleCategoryClick = (categoryName) => {
+//     // Navigate to menu page with category filter
+//     navigate(`/menu?category=${encodeURIComponent(categoryName)}`);
+//   };
+
+//   // Handle "See All" click
+//   const handleSeeAllClick = () => {
+//     navigate('/menu');
+//   };
+
+//   // Show loading state
+//   if (isLoading) {
+//     return (
+//       <div className="max-full flex justify-center items-center h-64">
+//         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+//       </div>
+//     );
+//   }
+
+//   // Show error state
+//   if (error) {
+//     return (
+//       <div className="max-full flex justify-center items-center h-64">
+//         <div className="text-center text-red-500">{error}</div>
+//       </div>
+//     );
+//   }
+
+//   // Show empty state if no categories are available
+//   if (categories.length === 0) {
+//     return (
+//       <div className="max-full flex justify-center items-center h-64">
+//         <div className="text-center text-gray-500">No categories available</div>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div className="max-full flex flex-col justify-center items-center mx-auto p-6 bg-grey-50">
+//       {/* Header Section */}
+//       <div className="flex max-w-7xl w-full justify-between items-center mb-8">
+//         <h1 className="text-3xl font-bold text-gray-800">
+//           Categories
+//         </h1>
+        
+//         <button 
+//           onClick={handleSeeAllClick}
+//           className="flex items-center space-x-2 px-4 py-2 text-blue-600 hover:text-blue-700 transition-colors"
+//         >
+//           <span className="font-medium underline">See All</span>
+//           {/* <ChevronRight className="w-5 h-5" /> */}
+//         </button>
+//       </div>
+
+//       {/* Category Grid */}
+//       <div className="max-w-7xl grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6">
+//         {categories.map((category) => (
+//           <div 
+//             key={category._id}
+//             className="relative group" 
+//             onClick={() => handleCategoryClick(category.name)}
+//           >
+//             {/* Circle Container */}
+//             <div className="aspect-square relative overflow-hidden rounded-full shadow-lg transform transition-all duration-300 group-hover:scale-105 cursor-pointer">
+//               {/* Category Image */}
+//               <img
+//                 src={category.image}
+//                 alt={category.name}
+//                 className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+//                 onError={(e) => {
+//                   e.target.src = 'https://via.placeholder.com/150?text=Category';
+//                 }}
+//               />
+              
+//               {/* Hover Overlay with Name */}
+//               <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 
+//                             group-hover:opacity-100 transition-opacity duration-300">
+//                 <span className="text-white text-lg font-semibold text-center px-4 py-2">
+//                   {category.name}
+//                 </span>
+//               </div>
+//             </div>
+//           </div>
+//         ))}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Category;
