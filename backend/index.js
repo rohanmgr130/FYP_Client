@@ -15,6 +15,7 @@ const profileRouter = require("./routes/User/profile.route");
 
 
 const path = require('path');
+const { khaltiRouter } = require("./routes/User/khalti.route");
 const app = express();
 const PORT = 4000;
 
@@ -38,6 +39,7 @@ app.use("/api/order", orderRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/profile", profileRouter);
 // app.use("/api/orderhistory", OrderHistoryRouter);
+app.use(khaltiRouter)
 
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running okay!" });
