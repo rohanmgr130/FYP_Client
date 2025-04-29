@@ -348,7 +348,7 @@ const MyOrder = () => {
                     cartId: cartDetails._id,
                     orderMethod: "cash-on",
                     additionalInfo: {
-                        orderNote: "Cash on delivery order"
+                        orderNote: "Cash on  order"
                     }
                     // No need to manually add promoCode and discount since the cart model 
                     // automatically adds these and the order creation process copies cart data
@@ -473,10 +473,10 @@ const MyOrder = () => {
                 </div>
             )}
 
-            <h1 className="text-2xl font-bold mb-6 text-center">Checkout</h1>
+            {/* <h1 className="text-2xl font-bold mb-6 text-center">Checkout</h1> */}
             
             <div className="mb-6">
-                <h2 className="text-lg font-medium mb-3">Select Payment Method</h2>
+                <h2 className="text-lg font-medium mb-3">Payment Method</h2>
                 <div className="flex gap-4">
                     <div 
                         className={`flex-1 border rounded-lg p-4 cursor-pointer transition-all ${
@@ -491,21 +491,21 @@ const MyOrder = () => {
                                 <div className={`w-4 h-4 rounded-full mr-2 ${
                                     paymentMethod === 'cash' ? 'bg-green-500' : 'border border-gray-300'
                                 }`}></div>
-                                <span>Cash on Delivery</span>
+                                <span>Cash on Pay</span>
                             </div>
                             <span className="text-gray-500 text-2xl">💵</span>
                         </div>
                     </div>
                     
-                    <div 
+                    {/* <div 
                         className={`flex-1 border rounded-lg p-4 cursor-pointer transition-all ${
                             paymentMethod === 'khalti' 
                             ? 'border-blue-500 bg-blue-50' 
                             : 'border-gray-200 hover:border-gray-300'
                         }`}
                         onClick={() => setPaymentMethod('khalti')}
-                    >
-                        <div className="flex items-center justify-between">
+                    > */}
+                        {/* <div className="flex items-center justify-between">
                             <div className="flex items-center">
                                 <div className={`w-4 h-4 rounded-full mr-2 ${
                                     paymentMethod === 'online' ? 'bg-blue-500' : 'border border-gray-300'
@@ -513,9 +513,9 @@ const MyOrder = () => {
                                 <span>Khalti</span>
                             </div>
                             <span className="text-gray-500 text-2xl">💳</span>
-                        </div>
+                        </div> */}
                         {/* <button>proceed to payment</button> */}
-                    </div>
+                    {/* </div> */}
                 </div>
             </div>
             
@@ -528,7 +528,8 @@ const MyOrder = () => {
                     cartDetails={cartDetails}
                     refreshCartDetails={refreshCartDetails}
                 />
-            ) : (
+            ) :
+             (
                 <OnlinePayment 
                     cartTotal={cartTotal} 
                     onCheckout={handleCheckout} 
@@ -537,7 +538,8 @@ const MyOrder = () => {
                     cartDetails={cartDetails}
                     refreshCartDetails={refreshCartDetails}
                 />
-            )}
+            )
+            }
         </div>
     );
 };
