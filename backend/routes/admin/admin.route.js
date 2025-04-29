@@ -2,15 +2,15 @@ const express = require("express")
 const { addStaff, getAllStaffs,updateStaff, deleteStaff } = require("../../controllers/admin/staff")
 
 
-const adminRouter = express.Router()
+const staffRouter = express.Router()
 
 
 
 
 //creating staff
-adminRouter.post("/register-staff", addStaff)
-adminRouter.get("/get-all-staffs", getAllStaffs)
-adminRouter.put("/update-staffs/:id", updateStaff);
-adminRouter.delete("/delete-staff/:id", deleteStaff);
+staffRouter.post("/register-staff", addStaff)
+staffRouter.get("/get-all-staffs", getAllStaffs)
+staffRouter.put("/update-staffs/:id", updateStaff);
+staffRouter.delete("/delete-staff/:id", deleteStaff);
 
-module.exports = adminRouter
+module.exports = staffRouter

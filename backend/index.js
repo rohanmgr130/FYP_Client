@@ -16,6 +16,8 @@ const profileRouter = require("./routes/User/profile.route");
 
 const path = require('path');
 const { khaltiRouter } = require("./routes/User/khalti.route");
+const promocodeRoute = require("./routes/admin/promocode.route");
+const categoryroute = require("./routes/staff/category.route");
 const app = express();
 const PORT = 4000;
 
@@ -38,6 +40,8 @@ app.use("/api", userRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/profile", profileRouter);
+app.use("/api/adminpromo", promocodeRoute )
+app.use("/api/category", categoryroute)
 // app.use("/api/orderhistory", OrderHistoryRouter);
 app.use(khaltiRouter)
 

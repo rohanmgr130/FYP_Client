@@ -13,15 +13,15 @@ const menuSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["vegetarian", "non-vegetarian", "drinks", "breakfast"], // Allowed types
+      enum: ["vegetarian", "non-vegetarian"], // Allowed types
     },
     categories: {
-      type: [String], // Array of categories
+      type: String,
       required: true,
     },
     image: {
-      type: String, // Store the image URL or file path
-      // required: true,
+      type: String,
+      required: true,
     },
     menuType:{
       type:String,

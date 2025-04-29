@@ -52,6 +52,51 @@
 // module.exports = router;
 
 
+// const express = require("express");
+// const router = express.Router();
+// const multer = require("multer");
+// const { authenticateUser, isAdmin } = require("../../middleware/authMiddleware");
+
+// // Import controller
+// const orderController = require("../../controllers/User/Orderpay");
+
+// // Configure multer for file uploads
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     cb(null, "uploads/");
+//   },
+//   filename: function (req, file, cb) {
+//     cb(null, `${Date.now()}-${file.originalname}`);
+//   }
+// });
+
+// const upload = multer({ 
+//   storage,
+//   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+//   fileFilter: function (req, file, cb) {
+//     if (file.mimetype.startsWith('image/')) {
+//       cb(null, true);
+//     } else {
+//       cb(new Error('Only image files are allowed!'), false);
+//     }
+//   }
+// });
+
+// // Public routes with authentication
+// router.post("/create-order", upload.single("image"), orderController.createOrder);
+
+// // Private/protected routes
+// router.get("/get-all-orders", authenticateUser, isAdmin, orderController.getAllOrders);
+// router.get("/:id", authenticateUser, orderController.getOrderById);
+// router.patch("/:id/status", authenticateUser, orderController.updateOrderStatus);
+// // router.patch("/:id/screenshot", authenticateUser, upload.single("image"), orderController.uploadScreenshot);
+// router.delete("/:id", authenticateUser, isAdmin, orderController.deleteOrder);
+// router.get("/my-orders/:userId", orderController.getMyOrders);
+
+// module.exports = router;
+
+
+// routes/User/Orderpay.route.js
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
@@ -89,8 +134,16 @@ router.post("/create-order", upload.single("image"), orderController.createOrder
 router.get("/get-all-orders", authenticateUser, isAdmin, orderController.getAllOrders);
 router.get("/:id", authenticateUser, orderController.getOrderById);
 router.patch("/:id/status", authenticateUser, orderController.updateOrderStatus);
-router.patch("/:id/screenshot", authenticateUser, upload.single("image"), orderController.uploadScreenshot);
+// router.patch("/:id/screenshot", authenticateUser, upload.single("image"), orderController.uploadScreenshot);
 router.delete("/:id", authenticateUser, isAdmin, orderController.deleteOrder);
 router.get("/my-orders/:userId", orderController.getMyOrders);
 
 module.exports = router;
+
+// In your main app.js or index.js file
+// Register routes
+/*
+app.use('/api/admin/promo-codes', require('./routes/admin/promoCodeRoutes'));
+app.use('/api/promo-codes', require('./routes/user/promoCodeRoutes'));
+app.use('/api/orders', require('./routes/User/Orderpay.route'));
+*/

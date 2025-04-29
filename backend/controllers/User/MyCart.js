@@ -214,6 +214,7 @@
 
 const Cart = require('../../models/user/MyCart');
 const Menu = require('../../models/staff/menu');
+const PromoCode = require('../../models/admin/promocode');
 
 // Helper to calculate totals and return a clean response
 const formatCartResponse = (cart) => {
@@ -358,51 +359,29 @@ const applyPromoCode = async (req, res) => {
         const orderTotal = cart.items.reduce((sum, item) => sum + item.total, 0);
         cart.orderTotal = orderTotal;
 
-        let discountPercent = 0;
-        let message = '';
-        const promo = promoCode.toUpperCase();
+        // Find the promo code in the database
+        const promoCodeUpper = promoCode.toUpperCase();
+        const promoCodeDoc = await PromoCode.findOne({ code: promoCodeUpper });
 
-        // Apply different discount based on promo code
-        switch (promo) {
-            case 'DISCOUNT10':
-                discountPercent = 10;
-                message = '10% discount applied';
-                break;
-            case 'WELCOME20':
-                discountPercent = 20;
-                message = '20% discount applied';
-                break;
-            case 'SPECIAL25':
-                discountPercent = 25;
-                message = '25% discount applied';
-                break;
-            case 'FREESHIP':
-                cart.discount = 50;
-                cart.promoCode = promo;
-                message = 'Free shipping discount applied (Rs. 50)';
-                break;
-            case 'FIRSTORDER':
-                // Check if this is the user's first order
-                // This would require checking order history
-                const hasExistingOrders = false; // Replace with actual check
-                if (!hasExistingOrders) {
-                    discountPercent = 30;
-                    message = '30% off on your first order';
-                } else {
-                    return res.status(400).json({ 
-                        success: false, 
-                        message: 'This promo code can only be used on your first order' 
-                    });
-                }
-                break;
-            default:
-                return res.status(400).json({ success: false, message: 'Invalid promo code' });
+        if (!promoCodeDoc) {
+            return res.status(400).json({ success: false, message: 'Invalid promo code' });
         }
 
-        // Calculate percentage discount
-        if (promo !== 'FREESHIP') {
-            cart.discount = Math.round(orderTotal * (discountPercent / 100));
-            cart.promoCode = promo;
+        if (promoCodeDoc.isUsed) {
+            return res.status(400).json({ success: false, message: 'This promo code has already been used' });
+        }
+
+        if (promoCodeDoc.expiryDate && new Date() > promoCodeDoc.expiryDate) {
+            return res.status(400).json({ success: false, message: 'This promo code has expired' });
+        }
+
+        // Apply the discount based on the promo code type and value
+        if (promoCodeDoc.discountType === 'percentage') {
+            // Percentage discount
+            cart.discount = Math.round(orderTotal * (promoCodeDoc.discountValue / 100));
+        } else if (promoCodeDoc.discountType === 'fixed') {
+            // Fixed amount discount
+            cart.discount = promoCodeDoc.discountValue;
         }
 
         // Ensure discount doesn't exceed order total
@@ -410,16 +389,23 @@ const applyPromoCode = async (req, res) => {
             cart.discount = orderTotal;
         }
 
+        // Save the promo code to the cart
+        cart.promoCode = promoCodeUpper;
+        
         // Calculate final total
         cart.finalTotal = orderTotal - cart.discount;
 
         // Save updated cart
         await cart.save();
 
-        // Get updated values after save (middleware might have modified them)
+        // Get updated values after save
         const response = formatCartResponse(cart);
 
-        res.status(200).json({ success: true, message, cart: response });
+        res.status(200).json({ 
+            success: true, 
+            message: `Discount of ${promoCodeDoc.discountType === 'percentage' ? promoCodeDoc.discountValue + '%' : 'Rs. ' + promoCodeDoc.discountValue} applied`, 
+            cart: response 
+        });
     } catch (error) {
         console.error('Error applying promo code:', error);
         res.status(500).json({ success: false, message: 'Server error', error: error.message });
@@ -448,11 +434,32 @@ const clearCart = async (req, res) => {
     }
 };
 
+// Finalize the promo code by marking it as used
+const finalizePromoCode = async (userId, promoCode) => {
+    if (!promoCode) return;
+    
+    try {
+        // Find the promo code document
+        const promoDoc = await PromoCode.findOne({ code: promoCode });
+        if (!promoDoc) return;
+        
+        // Mark as used
+        promoDoc.isUsed = true;
+        promoDoc.usedBy = userId;
+        promoDoc.usedAt = new Date();
+        
+        await promoDoc.save();
+    } catch (error) {
+        console.error('Error finalizing promo code:', error);
+    }
+};
+
 module.exports = {
     addToCart,
     removeFromCart,
     updateCartItem,
     getCart,
     applyPromoCode,
-    clearCart
-};    
+    clearCart,
+    finalizePromoCode
+};
