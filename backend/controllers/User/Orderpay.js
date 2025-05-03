@@ -753,6 +753,69 @@ const { finalizePromoCode } = require("../../controllers/User/MyCart");
 const PromoCode = require('../../models/admin/promocode');
 
 // Create a new order
+// exports.createOrder = async (req, res) => {
+//   try {
+//     const { cartId, orderMethod, additionalInfo } = req.body;
+
+//     if (!cartId) {
+//       return res.status(400).json({ success: false, message: "Cart ID is required" });
+//     }
+
+//     const cart = await Cart.findById(cartId);
+//     if (!cart) {
+//       return res.status(404).json({ success: false, message: "Cart not found" });
+//     }
+
+//     if (cart.promoCode) {
+//       await finalizePromoCode(cart.userId, cart.promoCode);
+//     }
+
+//     // Create new order with screenshot if provided
+//     const newOrder = new Orderpay({
+//       cartId,
+//       orderMethod,
+//       screenshot: req.file ? req.file.path : null,
+//       additionalInfo,
+//       cartData: {
+//         userId: cart.userId,
+//         items: cart.items,
+//         orderTotal: cart.orderTotal,
+//         promoCode: cart.promoCode,
+//         discount: cart.discount,
+//         finalTotal: cart.finalTotal
+//       }
+//     });
+
+//     const savedOrder = await newOrder.save();
+
+//     // If a promo code was used, mark it as used
+//     // Note: This is redundant as we're already calling finalizePromoCode above
+//     // You can remove this second call if desired
+//     if (cart.promoCode) {
+//       await finalizePromoCode(cart.userId, cart.promoCode);
+//     }
+
+//     // Delete the cart after order creation
+//     await Cart.find
+//     ByIdAndDelete(cartId);
+
+//     res.status(201).json({
+//       success: true,
+//       message: "Order created successfully",
+//       order: savedOrder
+//     });
+
+//   } catch (error) {
+//     console.error("Error creating order:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Error creating order",
+//       error: error.message
+//     });
+//   }
+// };
+
+// Create a new order
 exports.createOrder = async (req, res) => {
   try {
     const { cartId, orderMethod, additionalInfo } = req.body;
@@ -766,6 +829,7 @@ exports.createOrder = async (req, res) => {
       return res.status(404).json({ success: false, message: "Cart not found" });
     }
 
+    // If a promo code is applied, finalize it
     if (cart.promoCode) {
       await finalizePromoCode(cart.userId, cart.promoCode);
     }
@@ -788,16 +852,13 @@ exports.createOrder = async (req, res) => {
 
     const savedOrder = await newOrder.save();
 
-    // If a promo code was used, mark it as used
-    // Note: This is redundant as we're already calling finalizePromoCode above
-    // You can remove this second call if desired
-    if (cart.promoCode) {
-      await finalizePromoCode(cart.userId, cart.promoCode);
-    }
+    // Optional: finalizePromoCode again (redundant if already done above)
+    // if (cart.promoCode) {
+    //   await finalizePromoCode(cart.userId, cart.promoCode);
+    // }
 
     // Delete the cart after order creation
-    await Cart.find
-    ByIdAndDelete(cartId);
+    await Cart.findByIdAndDelete(cartId);
 
     res.status(201).json({
       success: true,
@@ -814,6 +875,7 @@ exports.createOrder = async (req, res) => {
     });
   }
 };
+
 
 // Get all orders
 exports.getAllOrders = async (req, res) => {

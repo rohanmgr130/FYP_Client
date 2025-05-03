@@ -3,54 +3,72 @@ const cors = require("cors");
 require("dotenv").config();
 
 const connectDB = require("./mongodb/ConnectDB"); // MongoDB connection
-const adminRouter = require("./routes/admin/admin.route"); // Admin routes (if applicable)
-const staffRouter = require("./routes/staff/staffmenu.route"); // Staff menu routes
-const orderRouter = require("./routes/User/Orderpay.route")
+const createDefaultAdmin = require("./config/createDefaultAdmin"); // Import default admin creation function
+const createDefaultUser = require("./config/createDefaultUser")
+
+const adminRouter = require("./routes/admin/admin.route");
+const staffRouter = require("./routes/staff/staffmenu.route");
+const orderRouter = require("./routes/User/Orderpay.route");
 const { userRouter } = require("./routes/User/user.route");
 const favoritesRouter = require("./routes/User/favorite.route");
 const profileRouter = require("./routes/User/profile.route");
-// const OrderHistoryRouter = require("./routes/User/orderhistory.route");
-
-
-
-
 const path = require('path');
 const { khaltiRouter } = require("./routes/User/khalti.route");
 const promocodeRoute = require("./routes/admin/promocode.route");
 const categoryroute = require("./routes/staff/category.route");
-const app = express();
-const PORT = 4000;
+const userRouteDetails = require("./routes/admin/user.route");
+const registerRoute = require("./routes/User/register.route")
 
-// Connect to MongoDB
-connectDB();
+const app = express();
+const PORT = process.env.PORT || 4000;
+
+// Connect to MongoDB and initialize the app
+const initializeApp = async () => {
+  try {
+    // Connect to MongoDB
+    await connectDB();
+    console.log("Connected to MongoDB successfully");
+    
+    // Create default admin account if it doesn't exist
+    await createDefaultAdmin();
+
+    // Create default user account if it doesn't exist
+    await createDefaultUser();
+    
+    // Start the server
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("Failed to initialize the application:", error);
+    process.exit(1);
+  }
+};
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(cors());
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Define API routes
-app.use("/api/admin", adminRouter); // Admin-related routes (if any)
+app.use("/api/admin", adminRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api", userRouter);
 app.use("/api/order", orderRouter);
 app.use("/api/favorites", favoritesRouter);
 app.use("/api/profile", profileRouter);
-app.use("/api/adminpromo", promocodeRoute )
-app.use("/api/category", categoryroute)
-// app.use("/api/orderhistory", OrderHistoryRouter);
-app.use(khaltiRouter)
+app.use("/api/adminpromo", promocodeRoute);
+app.use("/api/category", categoryroute);
+app.use("/api/users", userRouteDetails);
+app.use("/api/auth", registerRoute);
+app.use(khaltiRouter);
 
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running okay!" });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
+// Initialize the application
+initializeApp();

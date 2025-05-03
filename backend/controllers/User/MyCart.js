@@ -1,234 +1,22 @@
-// const Cart = require('../../models/user/MyCart');
-// const Menu = require('../../models/staff/menu');
-
-// // Helper to calculate totals and return a clean response
-// const formatCartResponse = (cart) => {
-//     const orderTotal = cart.items.reduce((sum, item) => sum + item.total, 0);
-//     const discount = cart.discount || 0;
-//     const finalTotal = orderTotal - discount;
-
-//     cart.orderTotal = orderTotal;
-//     cart.finalTotal = finalTotal;
-
-//     return {
-//         _id:cart._id,
-//         userId: cart.userId,
-//         items: cart.items,
-//         orderTotal,
-//         discount,
-//         promoCode: cart.promoCode || null,
-//         finalTotal
-//     };
-// };
-
-// // Add item to cart
-// const addToCart = async (req, res) => {
-//     try {
-//         const { userId, productId, productQuantity } = req.body;
-
-//         const product = await Menu.findById(productId);
-//         if (!product) return res.status(404).json({ message: 'Product not found' });
-
-//         let cart = await Cart.findOne({ userId });
-//         if (!cart) cart = new Cart({ userId, items: [] });
-
-//         const existingItem = cart.items.find(item => item.productId.toString() === productId);
-
-//         if (existingItem) {
-//             existingItem.productQuantity += productQuantity;
-//             existingItem.total = existingItem.productQuantity * product.price;
-//         } else {
-//             cart.items.push({
-//                 productId,
-//                 productQuantity,
-//                 price: product.price,
-//                 total: product.price * productQuantity,
-//                 isPlacedOrder: false
-//             });
-//         }
-
-//         const response = formatCartResponse(cart);
-//         await cart.save();
-
-//         res.status(200).json({ success: true, message: 'Item added to cart', cart: response });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Server error', error });
-//     }
-// };
-
-// // Remove item from cart
-// const removeFromCart = async (req, res) => {
-//     try {
-//         const { userId, productId } = req.body;
-
-//         let cart = await Cart.findOne({ userId });
-//         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
-
-//         const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
-//         if (itemIndex === -1) return res.status(404).json({ success: false, message: 'Item not found in cart' });
-
-//         cart.items.splice(itemIndex, 1);
-
-//         const response = formatCartResponse(cart);
-//         await cart.save();
-
-//         res.status(200).json({ success: true, message: 'Item removed from cart', cart: response });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Server error', error });
-//     }
-// };
-
-// // Update item quantity in cart
-// const updateCartItem = async (req, res) => {
-//     try {
-//         const { userId, productId, productQuantity } = req.body;
-
-//         let cart = await Cart.findOne({ userId });
-//         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
-
-//         const item = cart.items.find(item => item.productId.toString() === productId);
-//         if (!item) return res.status(404).json({ success: false, message: 'Item not found in cart' });
-
-//         if (productQuantity <= 0) {
-//             cart.items = cart.items.filter(item => item.productId.toString() !== productId);
-//         } else {
-//             item.productQuantity = productQuantity;
-//             item.total = item.productQuantity * item.price;
-//         }
-
-//         const response = formatCartResponse(cart);
-//         await cart.save();
-
-//         res.status(200).json({ success: true, message: 'Cart updated', cart: response });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Server error', error });
-//     }
-// };
-
-// // Get user cart
-// const getCart = async (req, res) => {
-//     try {
-//         const userId = req.params.id;
-
-//         const cart = await Cart.findOne({ userId }).populate('items.productId');
-        
-
-//         if (!cart) {
-//             return res.status(200).json({
-//                 userId,
-//                 items: [],
-//                 orderTotal: 0,
-//                 discount: 0,
-//                 finalTotal: 0,
-//                 promoCode: null
-//             });
-//         }
-
-//         const response = formatCartResponse(cart);
-//         await cart.save();
-
-//         res.status(200).json(response);
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Server error', error });
-//     }
-// };
-
-// // Apply promo code
-// const applyPromoCode = async (req, res) => {
-//     try {
-//         const { userId, promoCode } = req.body;
-
-//         let cart = await Cart.findOne({ userId });
-//         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
-
-//         let discountPercent = 0;
-//         let message = '';
-//         const promo = promoCode.toUpperCase();
-
-//         switch (promo) {
-//             case 'DISCOUNT10':
-//                 discountPercent = 10;
-//                 message = '10% discount applied';
-//                 break;
-//             case 'WELCOME20':
-//                 discountPercent = 20;
-//                 message = '20% discount applied';
-//                 break;
-//             case 'SPECIAL25':
-//                 discountPercent = 25;
-//                 message = '25% discount applied';
-//                 break;
-//             case 'FREESHIP':
-//                 cart.discount = 50;
-//                 cart.promoCode = promo;
-//                 break;
-//             default:
-//                 return res.status(400).json({ success: false, message: 'Invalid promo code' });
-//         }
-
-//         if (promo !== 'FREESHIP') {
-//             cart.discount = Math.round(cart.orderTotal * (discountPercent / 100));
-//             cart.promoCode = promo;
-//         }
-
-//         const response = formatCartResponse(cart);
-//         await cart.save();
-
-//         res.status(200).json({ success: true, message, cart: response });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Server error', error });
-//     }
-// };
-
-// // Clear cart
-// const clearCart = async (req, res) => {
-//     try {
-//         const { userId } = req.body;
-
-//         let cart = await Cart.findOne({ userId });
-//         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
-
-//         cart.items = [];
-//         cart.orderTotal = 0;
-//         cart.discount = 0;
-//         cart.promoCode = null;
-//         cart.finalTotal = 0;
-
-//         await cart.save();
-
-//         res.status(200).json({ success: true, message: 'Cart cleared successfully', cart: formatCartResponse(cart) });
-//     } catch (error) {
-//         res.status(500).json({ success: false, message: 'Server error', error });
-//     }
-// };
-
-// module.exports = {
-//     addToCart,
-//     removeFromCart,
-//     updateCartItem,
-//     getCart,
-//     applyPromoCode,
-//     clearCart
-// };
-
-
 const Cart = require('../../models/user/MyCart');
 const Menu = require('../../models/staff/menu');
 const PromoCode = require('../../models/admin/promocode');
 
 // Helper to calculate totals and return a clean response
 const formatCartResponse = (cart) => {
-    const orderTotal = cart.items.reduce((sum, item) => sum + item.total, 0);
+    // Filter out any items with null productId
+    const validItems = cart.items.filter(item => 
+        item.productId && (typeof item.productId === 'object' ? true : item.productId)
+    );
+    
+    const orderTotal = validItems.reduce((sum, item) => sum + item.total, 0);
     const discount = cart.discount || 0;
     const finalTotal = orderTotal - discount;
-
-    cart.orderTotal = orderTotal;
-    cart.finalTotal = finalTotal;
 
     return {
         _id: cart._id,
         userId: cart.userId,
-        items: cart.items,
+        items: validItems,
         orderTotal,
         discount,
         promoCode: cart.promoCode || null,
@@ -247,7 +35,9 @@ const addToCart = async (req, res) => {
         let cart = await Cart.findOne({ userId });
         if (!cart) cart = new Cart({ userId, items: [] });
 
-        const existingItem = cart.items.find(item => item.productId.toString() === productId);
+        const existingItem = cart.items.find(item => 
+            item.productId && item.productId.toString() === productId
+        );
 
         if (existingItem) {
             existingItem.productQuantity += productQuantity;
@@ -262,12 +52,13 @@ const addToCart = async (req, res) => {
             });
         }
 
-        const response = formatCartResponse(cart);
         await cart.save();
+        const response = formatCartResponse(cart);
 
         res.status(200).json({ success: true, message: 'Item added to cart', cart: response });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error', error });
+        console.error('Error adding to cart:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
@@ -279,17 +70,21 @@ const removeFromCart = async (req, res) => {
         let cart = await Cart.findOne({ userId });
         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
-        const itemIndex = cart.items.findIndex(item => item.productId.toString() === productId);
+        const itemIndex = cart.items.findIndex(item => 
+            item.productId && item.productId.toString() === productId
+        );
+        
         if (itemIndex === -1) return res.status(404).json({ success: false, message: 'Item not found in cart' });
 
         cart.items.splice(itemIndex, 1);
 
-        const response = formatCartResponse(cart);
         await cart.save();
+        const response = formatCartResponse(cart);
 
         res.status(200).json({ success: true, message: 'Item removed from cart', cart: response });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error', error });
+        console.error('Error removing from cart:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
@@ -301,33 +96,47 @@ const updateCartItem = async (req, res) => {
         let cart = await Cart.findOne({ userId });
         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
-        const item = cart.items.find(item => item.productId.toString() === productId);
+        const item = cart.items.find(item => 
+            item.productId && item.productId.toString() === productId
+        );
+        
         if (!item) return res.status(404).json({ success: false, message: 'Item not found in cart' });
 
         if (productQuantity <= 0) {
-            cart.items = cart.items.filter(item => item.productId.toString() !== productId);
+            cart.items = cart.items.filter(item => 
+                item.productId && item.productId.toString() !== productId
+            );
         } else {
             item.productQuantity = productQuantity;
             item.total = item.productQuantity * item.price;
         }
 
-        const response = formatCartResponse(cart);
         await cart.save();
+        const response = formatCartResponse(cart);
 
         res.status(200).json({ success: true, message: 'Cart updated', cart: response });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error', error });
+        console.error('Error updating cart item:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 
-// Get user cart
+// Get user cart with proper population and error handling
 const getCart = async (req, res) => {
     try {
         const userId = req.params.id;
+        console.log(`Getting cart for user: ${userId}`);
 
-        const cart = await Cart.findOne({ userId }).populate('items.productId');
+        // Find the cart and populate product information
+        let cart = await Cart.findOne({ userId })
+            .populate({
+                path: 'items.productId',
+                model: 'Menu', // Ensure this matches your Menu model's name in mongoose.model()
+                select: 'title image price type' // Include all fields you need
+            });
 
         if (!cart) {
+            console.log(`No cart found for user: ${userId}, creating empty response`);
             return res.status(200).json({
                 userId,
                 items: [],
@@ -338,12 +147,30 @@ const getCart = async (req, res) => {
             });
         }
 
-        const response = formatCartResponse(cart);
-        await cart.save();
+        // Check for and cleanup any invalid items (null productId)
+        const validItemsCount = cart.items.filter(item => item.productId).length;
+        console.log(`Cart found with ${cart.items.length} items, ${validItemsCount} valid items`);
+        
+        if (validItemsCount !== cart.items.length) {
+            console.log('Found null productIds in cart, cleaning up...');
+            // Filter out invalid items
+            cart.items = cart.items.filter(item => item.productId);
+            // Save the cleaned cart
+            await cart.save();
+        }
 
+        // Format and return response
+        const response = formatCartResponse(cart);
+        console.log(`Responding with cart: ${response.items.length} items, total: ${response.finalTotal}`);
+        
         res.status(200).json(response);
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error', error });
+        console.error('Error fetching cart:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'Server error while fetching cart', 
+            error: error.message 
+        });
     }
 };
 
@@ -355,6 +182,9 @@ const applyPromoCode = async (req, res) => {
         let cart = await Cart.findOne({ userId });
         if (!cart) return res.status(404).json({ success: false, message: 'Cart not found' });
 
+        // Filter out invalid items
+        cart.items = cart.items.filter(item => item.productId);
+        
         // Calculate the order total from items
         const orderTotal = cart.items.reduce((sum, item) => sum + item.total, 0);
         cart.orderTotal = orderTotal;
@@ -430,7 +260,8 @@ const clearCart = async (req, res) => {
 
         res.status(200).json({ success: true, message: 'Cart cleared successfully', cart: formatCartResponse(cart) });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'Server error', error });
+        console.error('Error clearing cart:', error);
+        res.status(500).json({ success: false, message: 'Server error', error: error.message });
     }
 };
 

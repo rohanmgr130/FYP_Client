@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Please provide a password"],
- 
+      minlength: [6, 'Password must be at least 6 characters long'],
     },
     contact: {
       type: String,
@@ -36,6 +36,13 @@ const UserSchema = new mongoose.Schema(
       enum: ["user", "admin", "staff"],
       default: "user",
     },
+    staffType: {
+      type: String,
+      enum: ["chef", "waiter", "cashier", "manager", "cleaner", "bartender", "host", "kitchen_helper", "delivery"],
+      required: function () {
+        return this.role === "staff";
+      }
+    },    
     address: {
       street: String,
       city: String,
@@ -73,6 +80,11 @@ UserSchema.pre("save", async function (next) {
 // Compare password method
 UserSchema.methods.comparePassword = async function (candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to check if user is a specific staff type
+UserSchema.methods.isStaffType = function(type) {
+  return this.role === "staff" && this.staffType === type;
 };
 
 const User = mongoose.model("User", UserSchema);
