@@ -1,16 +1,15 @@
-
-
-
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "Backend for FYP",
+  "description": "",
   "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
-  "author": "Rohan",
+"scripts": {
+  "test": "echo \"Error: no test specified\" && exit 1",
+  "start": "node index.js",
+  "dev": "nodemon index.js",
+  "build": "echo \"No build step needed for backend\""
+},
+  "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^1.7.9",
