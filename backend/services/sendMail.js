@@ -9,8 +9,12 @@ let transporter = nodemailer.createTransport({
   }
 });
 
+
+
 // Email verification function
+
 const verifyEmailMail = async (email, token) => {
+  const verifyLink = `${process.env.FRONTEND_URL}/verifyemail?t=${token}`;
    try {
      const mailOptions = {
        from: `CafeteriaEase <rohanmgr130@gmail.com>`,
@@ -50,7 +54,7 @@ const verifyEmailMail = async (email, token) => {
                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="margin: 35px 0;">
                          <tr>
                            <td align="center">
-                             <a href="http://localhost:3000/verifyemail?t=${token}" style="background-color: #4A5568; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; padding: 16px 30px; border-radius: 8px; transition: all 0.3s; box-shadow: 0 4px 10px rgba(74, 85, 104, 0.2);">Verify Email</a>
+                             <a href="${verifyLink}" style="background-color: #4A5568; color: #ffffff; text-decoration: none; font-weight: 600; font-size: 16px; display: inline-block; padding: 16px 30px; border-radius: 8px; transition: all 0.3s; box-shadow: 0 4px 10px rgba(74, 85, 104, 0.2);">Verify Email</a>
                            </td>
                          </tr>
                        </table>
