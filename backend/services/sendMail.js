@@ -1,5 +1,5 @@
-import nodemailer from 'nodemailer';
 
+const nodemailer = require("nodemailer")
 // Configure transporter
 let transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -93,4 +93,4 @@ const verifyEmailMail = async (email, token) => {
    }
 };
 
-export { verifyEmailMail };
+module.exports = { verifyEmailMail };
