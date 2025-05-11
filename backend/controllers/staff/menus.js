@@ -10,20 +10,7 @@ exports.getAllMenuItems = async (req, res) => {
   }
 };
 
-// Get a single menu item by ID
-// exports.getMenuItemById = async (req, res) => {
-//   console.log(req.body)
-//   try {
-//     const menuItem = await Menu.findById(req.params.id);
-//     if (!menuItem) {
 
-//       return res.status(404).json({ message: "Menu item not found" });
-//     }
-//     res.status(200).json(menuItem);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error fetching menu item", error });
-//   }
-// };
 
 
 // Get a single menu item by ID
