@@ -48,7 +48,10 @@ const initializeApp = async () => {
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({  
+    origin: ['cafeteria-ecru.vercel.app', 'http://localhost:3000'],
+    credentials: true,
+}));
 
 // Serve static files from the uploads directory
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
