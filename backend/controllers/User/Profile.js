@@ -8,6 +8,11 @@ const User = require('../../models/user/User'); // Adjust path as needed
 const getUser = async (req, res) => {
   try {
     const userId = req.user.id; // Assuming you're using authentication middleware that adds user to request
+    // const userId = req.params.id
+
+    if (!userId) {
+      return res.status(404).json({ success: false, message: 'Userid is required' });
+    }
     
     const user = await User.findById(userId).select('-password -verificationToken -verificationTokenExpires -resetPasswordToken -resetPasswordExpires');
     

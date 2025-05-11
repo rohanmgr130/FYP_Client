@@ -13,7 +13,7 @@ const menuSchema = new mongoose.Schema(
     type: {
       type: String,
       required: true,
-      enum: ["vegetarian", "non-vegetarian"], // Allowed types
+      enum: ["vegetarian", "non-vegetarian" , "drinks"], // Allowed types
     },
     categories: {
       type: String,

@@ -18,7 +18,7 @@ const createDefaultAdmin = async () => {
         contact: process.env.DEFAULT_ADMIN_CONTACT || "0000000000",
         role: "admin",
         isVerified: true,
-        address: {
+        address: {  
           street: process.env.DEFAULT_ADMIN_STREET || "Admin Street",
           city: process.env.DEFAULT_ADMIN_CITY || "Admin City",
           state: process.env.DEFAULT_ADMIN_STATE || "Admin State",

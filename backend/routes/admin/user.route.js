@@ -16,12 +16,12 @@ const {
 // ===== User Routes =====
 
 // Get all users
-router.get('/', authenticateUser, isAdmin, getAllUsers);
+router.get('/', authenticateUser, getAllUsers);
 
 // Get user by ID
-router.get('/:id', authenticateUser, isAdmin, getUserById);
+router.get('/:id', authenticateUser, getUserById);
 
-// Create user (admin only)
+// Create staff (admin only)
 router.post('/', authenticateUser, isAdmin, createUser);
 
 // Update user
@@ -45,5 +45,3 @@ router.get('/admins', authenticateUser, isAdmin, getAllAdmins);
 
 module.exports = router;
 
-// In your main app.js or server.js file:
-// app.use("/api/users", userRoutes);

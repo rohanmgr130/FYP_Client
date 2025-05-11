@@ -1,5 +1,5 @@
 const express = require("express");
-const loginUser = require("../../controllers/User/Login");
+// const loginUser = require("../../controllers/User/Login");
 const userRouter = express.Router();
 
 const {
@@ -13,8 +13,8 @@ const {
 
 const promoCodeController = require('../../controllers/admin/Promocode');
 
-// Authentication
-userRouter.post("/login", loginUser);
+// // Authentication
+// userRouter.post("/login", loginUser);
 
 // 🛒 Cart routes
 userRouter.post("/add-to-cart", addToCart);

@@ -4,7 +4,7 @@ require("dotenv").config();
 
 const connectDB = require("./mongodb/ConnectDB"); // MongoDB connection
 const createDefaultAdmin = require("./config/createDefaultAdmin"); // Import default admin creation function
-const createDefaultUser = require("./config/createDefaultUser")
+// const createDefaultUser = require("./config/createDefaultUser")
 
 const adminRouter = require("./routes/admin/admin.route");
 const staffRouter = require("./routes/staff/staffmenu.route");
@@ -32,8 +32,8 @@ const initializeApp = async () => {
     // Create default admin account if it doesn't exist
     await createDefaultAdmin();
 
-    // Create default user account if it doesn't exist
-    await createDefaultUser();
+    // // Create default user account if it doesn't exist
+    // await createDefaultUser();
     
     // Start the server
     app.listen(PORT, () => {
@@ -64,7 +64,7 @@ app.use("/api/adminpromo", promocodeRoute);
 app.use("/api/category", categoryroute);
 app.use("/api/users", userRouteDetails);
 app.use("/api/auth", registerRoute);
-app.use(khaltiRouter);
+app.use("/api", khaltiRouter);
 
 app.get("/", (req, res) => {
   res.status(200).json({ success: true, message: "Server is running okay!" });

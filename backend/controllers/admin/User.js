@@ -121,7 +121,7 @@ const getUserById = async (req, res) => {
   }
 };
 
-// Create a new user
+// Create a new staff
 const createUser = async (req, res) => {
     console.log('Request body:');
 
