@@ -10,6 +10,6 @@ const {
 // Protected routes (require authentication)
 favoritesRouter.post("/add", authenticateUser, addToFavorites);
 favoritesRouter.delete("/remove", authenticateUser, removeFromFavorites);
-favoritesRouter.get("/favorites", authenticateUser, getUserFavorites);
+favoritesRouter.get("/user-favorites", authenticateUser, getUserFavorites);
 
 module.exports = favoritesRouter;

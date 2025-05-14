@@ -116,7 +116,7 @@ app.use("/api/admin", adminRouter);
 app.use("/api/staff", staffRouter);
 app.use("/api", userRouter);
 app.use("/api/order", orderRouter);
-app.use("/api/favorites", favoritesRouter);
+app.use("/api/favorite", favoritesRouter);
 app.use("/api/profile", profileRouter);
 app.use("/api/adminpromo", promocodeRoute);
 app.use("/api/category", categoryroute);

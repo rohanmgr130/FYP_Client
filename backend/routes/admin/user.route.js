@@ -22,7 +22,7 @@ router.get('/', authenticateUser, getAllUsers);
 router.get('/:id', authenticateUser, getUserById);
 
 // Create staff (admin only)
-router.post('/', authenticateUser, isAdmin, createUser);
+router.post('/add-staff', authenticateUser, isAdmin, createUser);
 
 // Update user
 router.put('/:id', authenticateUser, isAdmin, updateUser);
