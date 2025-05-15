@@ -28,6 +28,11 @@ const menuSchema = new mongoose.Schema(
       required:true,
       enum:["todays-special","normal", "best-seller"],
       default:"normal"
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+      required: true
     }
   },
   { timestamps: true }

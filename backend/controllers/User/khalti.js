@@ -365,7 +365,7 @@ const khalti = async (req, res) => {
     
     // Create Khalti payment configuration
     const khaltiConfig = {
-      return_url: `${process.env.NEXT_BASE_URL}/order-success/${order._id}`,
+      return_url: `${process.env.NEXT_BASE_URL}`,
       website_url: process.env.NEXT_BASE_URL,
       amount: Math.round(finalTotal * 100), // Convert to paisa and ensure it's a whole number
       purchase_order_id: order._id.toString(),
