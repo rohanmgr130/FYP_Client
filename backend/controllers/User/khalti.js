@@ -362,6 +362,12 @@ const khalti = async (req, res) => {
     } else if (userId) {
       user = await User.findById(userId).select('fullname email phone');
     }
+
+        console.log('process', process);
+    console.log('process.env', process.env);
+
+    console.log('processurl', process.env.NEXT_BASE_URL);
+
     
     // Create Khalti payment configuration
     const khaltiConfig = {
