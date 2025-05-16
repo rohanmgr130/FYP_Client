@@ -415,6 +415,8 @@ const khalti = async (req, res) => {
     
     order.orderMethod = "khalti";
     await order.save();
+    // Delete the cart after order creation
+    await Cart.findByIdAndDelete(cartId);
 
     // Send successful response
     res.status(200).json({

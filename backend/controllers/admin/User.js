@@ -99,6 +99,8 @@ const getAllAdmins = async (req, res) => {
 // Get a single user by ID
 const getUserById = async (req, res) => {
   try {
+
+    console.log('req', req);
     const user = await User.findById(req.params.id).select('-password -verificationToken -resetPasswordToken');
     
     if (!user) {

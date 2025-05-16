@@ -463,6 +463,7 @@ const resendVerificationEmail = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
+    
 
     // Send verification email
     try {
