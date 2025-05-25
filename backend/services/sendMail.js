@@ -123,7 +123,7 @@ const sendForgotPasswordMail = async (email, token) => {
                     
                     <!-- Header -->
                     <tr>
-                      <td style="padding: 20px; background-color: #2C5282; text-align: center; color: #fff; font-size: 22px;">
+                      <td style="padding: 20px; background-color: #4A5568; text-align: center; color: #fff; font-size: 22px;">
                         CafeteriaEase - Ordering System
                       </td>
                     </tr>
@@ -131,7 +131,7 @@ const sendForgotPasswordMail = async (email, token) => {
                     <!-- Main content -->
                     <tr>
                       <td style="padding: 40px 30px;">
-                        <h2 style="margin: 0 0 20px; color: #2C5282; font-size: 24px;">Reset Your Password</h2>
+                        <h2 style="margin: 0 0 20px; color: #4A5568; font-size: 24px;">Reset Your Password</h2>
                         
                         <p style="margin: 0 0 20px; font-size: 16px;">Hello 👋,</p>
                         
@@ -141,7 +141,7 @@ const sendForgotPasswordMail = async (email, token) => {
                         
                         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
                           <tr>
-                            <td style="background-color: #2C5282; border-radius: 6px; text-align: center; padding: 15px;">
+                            <td style="background-color: #4A5568; border-radius: 6px; text-align: center; padding: 15px;">
                               <a href="${resetLink}"style="color: #ffffff; text-decoration: none; font-weight: bold; font-size: 16px; display: block;">
                                 Reset Password
                               </a>

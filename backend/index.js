@@ -19,6 +19,7 @@ const promocodeRoute = require("./routes/admin/promocode.route");
 const categoryroute = require("./routes/staff/category.route");
 const userRouteDetails = require("./routes/admin/user.route");
 const registerRoute = require("./routes/User/register.route");
+const rewardPoints = require("./routes/staff/rewardmenu.route");
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -46,6 +47,7 @@ app.use("/api/category", categoryroute);
 app.use("/api/users", userRouteDetails);
 app.use("/api/auth", registerRoute);
 app.use("/api", khaltiRouter);
+app.use("/api/reward-point", rewardPoints)
 
 // ✅ Root route
 app.get("/", (req, res) => {
