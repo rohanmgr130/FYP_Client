@@ -193,7 +193,7 @@ exports.updateOrderStatus = async (req, res) => {
             user.rewardPoints = (user.rewardPoints || 0) + pointsToAdd;
             await user.save();
             
-            console.log(`Added ${pointsToAdd} reward points (${pointsPercentage}% of Rs ${orderTotal}) to user ${userId} for order ${updatedOrder._id}`);
+            console.log(`Added ${pointsToAdd} reward points of Rs ${orderTotal}) to user ${userId} for order ${updatedOrder._id}`);
           }
         }
       } catch (rewardError) {

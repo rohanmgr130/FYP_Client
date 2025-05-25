@@ -21,7 +21,7 @@ const loginstaff = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id }, "iamrohanmagar", {
-      expiresIn: "1h", // Token expiration time
+      expiresIn: "1d", // Token expiration time
     });
 
     // Return user information along with token

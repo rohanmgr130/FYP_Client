@@ -1,62 +1,3 @@
-// const bcrypt = require('bcryptjs')
-// const jwt = require("jsonwebtoken")
-// const User = require("../../models/user/User")
-
-// // Login Controller
-// const loginUser = async (req, res) => {
-//   const { email, password } = req.body;
-
-//   try {
-//     // Find user by email
-//     const user = await User.findOne({ email })
-//     if (!user) {
-//       return res.status(400).json({ success: false, message: "Invalid credentials" });
-//     }
-    
-//     console.log("Found user:", user.email);
-//     console.log("Password from request:", password);
-//     console.log("Stored hashed password:", user.password);
-    
-//     // Try both methods for comparison to see which works
-//     const isMatchDirect = await bcrypt.compare(password, user.password);
-//     console.log("Direct bcrypt comparison result:", isMatchDirect);
-    
-//     const isMatchMethod = await user.comparePassword(password);
-//     console.log("User model method comparison result:", isMatchMethod);
-    
-//     // Use direct comparison for now
-//     if (!isMatchDirect) {
-//       return res.status(400).json({success: false, message: "Invalid credentials" });
-//     }
-
-//     // Rest of your login code...
-//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "iamrohanmagar", {
-//       expiresIn: "1h"
-//     });
-
-//     // Create user response...
-//     const userResponse = {
-//       id: user._id,
-//       fullname: user.fullname,
-//       email: user.email,
-//       // Other fields...
-//     };
-
-//     res.status(200).json({
-//       success: true,
-//       message: "Login successful",
-//       token,
-//       user: userResponse
-//     });
-//   } catch (error) {
-//     console.log("Login error details:", error);
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };
-
-// module.exports = loginUser;
-
-
 
 
 const bcrypt = require('bcrypt');  // Make sure this matches what's used in the User model
@@ -87,7 +28,7 @@ const loginUser = async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "iamrohanmagar", {
-      expiresIn: "1h", // Token expiration time
+      expiresIn: "1d", // Token expiration time
     });
 
     // Create a user object with all fields except password and sensitive tokens
@@ -97,6 +38,7 @@ const loginUser = async (req, res) => {
       email: user.email,
       contact: user.contact,
       role: user.role,
+      profileImage: user.profileImage,
       staffType: user.staffType,
       address: user.address,
       isVerified: user.isVerified,
