@@ -1,5 +1,3 @@
-
-
 // routes/User/Orderpay.route.js
 const express = require("express");
 const router = express.Router();

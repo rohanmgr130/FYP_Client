@@ -9,7 +9,7 @@ const User = require('../../models/user/User');
 // Create a new order
 exports.createOrder = async (req, res) => {
   try {
-    const { cartId, orderMethod, additionalInfo } = req.body;
+    const { cartId, orderMethod, additionalInfo, discountAmt } = req.body;
 
     if (!cartId) {
       return res.status(400).json({ success: false, message: "Cart ID is required" });
@@ -24,6 +24,13 @@ exports.createOrder = async (req, res) => {
     if (cart.promoCode) {
       await finalizePromoCode(cart.userId, cart.promoCode);
     }
+    let newAmmount 
+    if(discountAmt && discountAmt > 0){
+      newAmmount = discountAmt
+    }else{
+      newAmmount = cart.finalTotal
+    }
+
 
     // Create new order with screenshot if provided
     const newOrder = new Orderpay({
@@ -37,11 +44,15 @@ exports.createOrder = async (req, res) => {
         orderTotal: cart.orderTotal,
         promoCode: cart.promoCode,
         discount: cart.discount,
-        finalTotal: cart.finalTotal
+        finalTotal: newAmmount 
       }
     });
 
+  
+
     const savedOrder = await newOrder.save();
+
+   
 
     // Delete the cart after order creation
     await Cart.findByIdAndDelete(cartId);
